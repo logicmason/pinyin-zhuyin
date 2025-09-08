@@ -108,15 +108,108 @@ function convertToUmlautIfV(char) {
   return char;
 }
 
+// Inverse conversion: tone marks → tone numbers
+function toToneNumbers(inputText, options = {}) {
+  const { erhuaTone = 'after-r', showNeutralTone = true } = options;
+
+  // Build inverse map: toned vowel -> [base, toneNumber]
+  const inverse = new Map();
+  for (const [base, arr] of Object.entries(toneMarkTable)) {
+    if (base === 'v' || base === 'V') continue;
+    arr.forEach((toned, idx) => {
+      inverse.set(toned, [base, String(idx + 1)]);
+    });
+  }
+
+  let out = "";
+  let syll = "";
+  let tone = ""; // '1'..'4'
+  let seenVowel = false;
+
+  const flushSyllable = () => {
+    if (syll.length === 0) return;
+    if (/r$/i.test(syll) && tone) {
+      out += (erhuaTone === 'before-r')
+        ? syll.replace(/r$/i, tone + 'r')
+        : syll.replace(/r$/i, 'r' + tone);
+    } else {
+      if (tone) out += syll + tone;
+      else out += syll + (seenVowel && showNeutralTone ? '5' : '');
+    }
+    syll = "";
+    tone = "";
+    seenVowel = false;
+  };
+
+  const isBoundary = (ch) => /[\s\-.,!?;:]/.test(ch);
+  const isSyllableBreaker = (ch) => /[^aeiouvüngr]/i.test(ch);
+
+  for (let i = 0; i <= inputText.length; i++) {
+    const ch = inputText.charAt(i);
+
+    const inv = inverse.get(ch);
+    if (inv) {
+      let [base, n] = inv;
+      // Normalize uppercase umlaut base to lowercase ü to match expectations (e.g., NǙ -> Nü3)
+      if (base === 'Ü') base = 'ü';
+      syll += base;
+      tone = n; // explicit tone 1–4
+      seenVowel = true;
+
+      // After a toned vowel, greedily consume pinyin finals: additional vowels,
+      // optional nasal coda n/ng, and optional erhua r before flushing.
+      let j = i + 1;
+      // additional vowels
+      while (j < inputText.length) {
+        const c = inputText.charAt(j);
+        if (/[AEIOUaeiouÜü]/.test(c)) { syll += c; j++; continue; }
+        break;
+      }
+      // nasal coda
+      if (j + 1 < inputText.length && /ng/i.test(inputText.slice(j, j + 2))) {
+        syll += inputText.slice(j, j + 2);
+        j += 2;
+      } else if (j < inputText.length && /n/i.test(inputText.charAt(j))) {
+        syll += inputText.charAt(j);
+        j += 1;
+      }
+      // erhua 'r' only if it does NOT start the next syllable
+      if (j < inputText.length && /r/i.test(inputText.charAt(j))) {
+        const nextNext = inputText.charAt(j + 1);
+        // If nextNext is a boundary (space/punct) or end, treat as erhua; otherwise, leave 'r' for next syllable
+        if (!nextNext || /[\s\-.,!?;:]/.test(nextNext)) {
+          syll += inputText.charAt(j);
+          j += 1;
+        }
+      }
+      i = j - 1;
+      flushSyllable();
+      continue;
+    }
+
+    if (ch === '') { flushSyllable(); continue; }
+
+    if (isBoundary(ch)) { flushSyllable(); out += ch; continue; }
+
+    // syllable breaker (after we've seen a vowel): split like toToneMarks
+    if (seenVowel && isSyllableBreaker(ch)) { flushSyllable(); }
+
+    // accumulate char
+    if (vowelSet.has(ch)) seenVowel = true;
+    syll += ch;
+  }
+
+  return out;
+}
+
 module.exports = {
   toToneMarks,
+  toToneNumbers,
   toneMarkTable,
   vowelSet,
-  // Regex class helpers used by p2z for tokenization/boundaries
+  // Regex class helpers
   letters: "a-zü",
   vowels: "aeiouü",
-  // consonants: consonants range chosen to match pinyin syllable segmentation assumptions
+  // consonants range chosen to match pinyin syllable segmentation assumptions
   consonants: "b-df-hj-np-tv-z",
-  // placeToneMark was used earlier as a low-level placer; not needed now that
-  // z2p delegates number→mark conversion to toToneMarks.
 };

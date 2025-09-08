@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { expect } = require('chai');
-const { toToneMarks } = require('../tone-tool.js');
+const { toToneMarks, toToneNumbers } = require('../tone-tool.js');
 
 describe('Pinyin Tone Tool', () => {
   it('should handle an empty string', () => {
@@ -37,6 +37,7 @@ describe('Pinyin Tone Tool', () => {
       { input: "zou3lu4", expected: "zǒulù"},
       { input: "ji3dian3zhong1", expected: "jǐdiǎnzhōng"},
       { input: "jia1", expected: "jiā"},
+      { input: "guai4bude2", expected: "guàibudé" },
     ];
 
     testCases.forEach(({ input, expected }) => {
@@ -131,7 +132,7 @@ describe('Pinyin Tone Tool', () => {
   it('should insert apostrophes where required', () => {
     const testCases = [
       { input: "Xi1an1", expected: "Xī'ān" },
-      { input: "Da4an1 Sen1lin2 Gongyuan2", expected: "Dà'ān Sēnlín Gongyuán" },
+      { input: "Da4an1 Sen1lin2 Gong1yuan2", expected: "Dà'ān Sēnlín Gōngyuán" },
       { input: "Ai4er3lan2", expected: "Ài'ěrlán" },
       { input: "bo2ai4", expected: "bó'ài" }, 
       { input: "gan3en1", expected: "gǎn'ēn" },
@@ -163,6 +164,8 @@ describe('Pinyin Tone Tool', () => {
         expected: "Wǒde guóyǔ lǎoshī bēn 60 suì." },
       { input: "Na4wei4 xian1sheng1 jiao4 Max, ta1 lai2zi4 De1guo2.",
         expected: "Nàwèi xiānshēng jiào Max, tā láizì Dēguó." },
+      { input: "Cheng2zhu3 da4ren hui2lai2 le!",
+        expected: "Chéngzhǔ dàren huílái le!" },
       { input: "Ta1 de CPzhi2 hen3 gao1.",
         expected: "Tā de CPzhí hěn gāo." }, 
       { input: "The city now known as Guang3zhou1 used to be called Canton.",
@@ -175,6 +178,65 @@ describe('Pinyin Tone Tool', () => {
       const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+  });
+
+  it('should convert tone-marked pinyin to numbers (basic)', () => {
+    const cases = [
+      { input: 'ā á ǎ à', expected: 'a1 a2 a3 a4' },
+      { input: 'nǐhǎo', expected: 'ni3hao3' },
+      { input: "Dà'ān Sēnlín Gōngyuán", expected: "Da4'an1 Sen1lin2 Gong1yuan2" },
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = toToneNumbers(input, { showNeutralTone: true });
+      expect(actual).to.equal(expected);
+    });
+  });
+
+  it('should preserve ü/Ü and map tones to numbers', () => {
+    const cases = [
+      { input: 'lǜ', expected: 'lü4' },
+      { input: 'nǚ', expected: 'nü3' },
+      { input: 'NǙ', expected: 'Nü3' },
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = toToneNumbers(input);
+      expect(actual).to.equal(expected);
+    });
+  });
+
+  it('should emit neutral tone 5 when configured', () => {
+    const cases = [
+      { input: 'de', expected: 'de5' },
+      { input: 'zhège dìfāng', expected: 'zhe4ge5 di4fang1' },
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = toToneNumbers(input, { showNeutralTone: true });
+      expect(actual).to.equal(expected);
+    });
+  });
+
+  it('should not emit neutral tone 5 when not configured', () => {
+    const cases = [
+      { input: 'guàibudé', expected: 'guai4bude2' },
+      { input: 'Chéngzhǔ dàren huílái le!', expected: 'Cheng2zhu3 da4ren hui2lai2 le!' },
+      { input: 'zhège dìfāng', expected: 'zhe4ge di4fang1' },
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = toToneNumbers(input, { showNeutralTone: false });
+      expect(actual).to.equal(expected);
+    });
+  });
+
+  it('should place tone number relative to erhua r according to option', () => {
+    const cases = [
+      { input: 'huār', expectedAfter: 'huar1', expectedBefore: 'hua1r' },
+      { input: 'zhèr', expectedAfter: 'zher4', expectedBefore: 'zhe4r' },
+      { input: 'wānr', expectedAfter: 'wanr1', expectedBefore: 'wan1r' },
+    ];
+    cases.forEach(({ input, expectedAfter, expectedBefore }) => {
+      expect(toToneNumbers(input, { erhuaTone: 'after-r' })).to.equal(expectedAfter);
+      expect(toToneNumbers(input, { erhuaTone: 'before-r' })).to.equal(expectedBefore);
     });
   });
 });

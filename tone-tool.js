@@ -23,7 +23,8 @@ const toneMarkTable = {
   "V": ["Ǖ", "Ǘ", "Ǚ", "Ǜ"]
 };
 
-function addTones(inputText) {
+function toToneMarks(inputText, options = {}) {
+  const { apostrophes = true } = options;
   let outputText = "";
   let currentWord = "";
   let currentChar = "";
@@ -63,10 +64,12 @@ function addTones(inputText) {
       if (currentWord.match(/u[aeio]/i)) useVowel = 2;
       if (currentWord.match(/[vü]e/i)) useVowel = 2;
 
-      //add appostrophes before 2nd or later syllables starting with a, e and o
-      const prevChar = outputText.slice(-1);
-      if (prevChar.length > 0 && !prevChar.match(/[\s\-.,!?;:]/) && currentWord[0]?.match(/[aeo]/i)) {
-        outputText += "'";
+      // add apostrophes before 2nd or later syllables starting with a, e and o
+      if (apostrophes) {
+        const prevChar = outputText.slice(-1);
+        if (prevChar.length > 0 && !prevChar.match(/[\s\-.,!?;:]/) && currentWord[0]?.match(/[aeo]/i)) {
+          outputText += "'";
+        }
       }
 
       // We'll check either the first or the first two vowels, depending on which should have the tone
@@ -106,7 +109,14 @@ function convertToUmlautIfV(char) {
 }
 
 module.exports = {
-  addTones,  // rename addtones to addTones for consistency
+  toToneMarks,
   toneMarkTable,
   vowelSet,
+  // Regex class helpers used by p2z for tokenization/boundaries
+  letters: "a-zü",
+  vowels: "aeiouü",
+  // consonants: consonants range chosen to match pinyin syllable segmentation assumptions
+  consonants: "b-df-hj-np-tv-z",
+  // placeToneMark was used earlier as a low-level placer; not needed now that
+  // z2p delegates number→mark conversion to toToneMarks.
 };

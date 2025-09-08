@@ -73,7 +73,6 @@ console.log(p2z('ni3hao3')); // ㄋㄧˇㄏㄠˇ
 
 // With options
 const options = {
-  markNeutralTone: true,    // treat unmarked tones in pinyin as neutral and mark with ˙
   tonemarks: true,          // Use tone marks instead of numbers
   convertPunctuation: false // Convert Chinese punctuation
 };
@@ -101,6 +100,13 @@ const options = {
 console.log(z2p('ㄏㄨㄚㄦ', options)); // huār
 ```
 
+### Tone utilities
+
+- `toToneMarks(input: string)` – Convert Pinyin with tone numbers to tone marks (adds apostrophes where required). Defined in `tone-tool.js`.
+- Tone data/helpers live in `tone-tool.js` and are reused by the converters:
+  - `toneMarkTable` – tone placement mapping.
+  - `vowels`, `consonants` – character-class fragments used to build tokenizer regexes in `p2z`.
+
 ## API Reference
 
 ### `p2z(pinyin, options)`
@@ -110,7 +116,6 @@ Converts Pinyin to Zhuyin.
 **Parameters:**
 - `pinyin` (string): Input pinyin text
 - `options` (object, optional):
-  - `markNeutralTone` (boolean, default: true): Mark neutral tones with ˙
   - `tonemarks` (boolean, default: true): Use tone marks instead of numbers
   - `convertPunctuation` (boolean, default: false): Convert ,.?!;: to ，,。？！；： 
 
@@ -126,7 +131,7 @@ Converts Zhuyin to Pinyin.
   - `erhuaTone` (string, default: 'after-r'): Tone placement for erhua ('before-r' or 'after-r')
   - `umlautMode` (string, default: 'collapse-nl-uan'): Handle n/l + üan → uan
   - `tonemarks` (boolean, default: true): Use tone marks instead of numbers
-  - `markNeutralTone` (boolean, default: false): Show neutral tone numbers
+  - `markNeutralTone` (boolean, default: false): Show neutral tone as number 5
   - `apostrophes` (string, default: 'auto'): Apostrophe behavior ('auto', true, false)
 
 **Returns:** (string) Pinyin text

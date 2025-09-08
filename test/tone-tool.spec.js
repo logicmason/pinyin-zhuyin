@@ -1,14 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 const { expect } = require('chai');
-const { addTones } = require('../tone-tool.js');
+const { toToneMarks } = require('../tone-tool.js');
 
 describe('Pinyin Tone Tool', () => {
   it('should handle an empty string', () => {
     const input = "";
     const expected = "";
   
-    const actual = addTones(input);
+    const actual = toToneMarks(input);
     expect(actual).to.equal(expected,
       `"${input}" should convert to "${expected}" but got "${actual}"`);
   });
@@ -40,7 +40,7 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -54,7 +54,7 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -72,7 +72,26 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
+      expect(actual).to.equal(expected,
+        `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+  });
+
+  it('should handle conversions erhua', () => {
+    const testCases = [
+      { input: "hua1r", expected: "huār" },
+      { input: "huar1", expected: "huār" },
+      { input: "zhe4r", expected: "zhèr" },
+      { input: "na4r", expected: "nàr" },
+      { input: "yi1 hui3r", expected: "yī huǐr" },
+      { input: "lan2 ker1", expected: "lán kēr" },
+      { input: "ta1 dai4zhe gou3 liu4wanr1 qu4 le.",
+        expected: "tā dàizhe gǒu liùwānr qù le." },
+    ];
+
+    testCases.forEach(({ input, expected }) => {
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -88,7 +107,7 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -103,7 +122,7 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -130,7 +149,7 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -153,7 +172,7 @@ describe('Pinyin Tone Tool', () => {
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = addTones(input);
+      const actual = toToneMarks(input);
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });

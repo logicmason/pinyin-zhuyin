@@ -1,11 +1,6 @@
 // ancient, battle-tested code
 // be cautious about making any changes!
 
-const vowelSet = new Set(['a', 'e', 'i', 'o', 'u', 'v', 'ü', 'A', 'E', 'I', 'O', 'U', 'V', 'Ü']);
-const toneMarkedVowels = 'āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ';
-const umlatu = "ü";
-const capUmlatu = "Ü";
-
 const toneMarkTable = {
   a: ["ā", "á", "ǎ", "à"],
   e: ["ē", "é", "ě", "è"],
@@ -24,6 +19,48 @@ const toneMarkTable = {
   "V": ["Ǖ", "Ǘ", "Ǚ", "Ǜ"]
 };
 
+const toneToBase = {};
+for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
+  toneMarks.forEach((toneMark, index) => {
+    toneToBase[toneMark] = baseVowel.toLowerCase();
+  });
+}
+
+const vowelSet = new Set(['a', 'e', 'i', 'o', 'u', 'v', 'ü', 'A', 'E', 'I', 'O', 'U', 'V', 'Ü']);
+const umlatu = "ü";
+const capUmlatu = "Ü";
+
+// Character class definitions
+const toneMarkedVowels = 'āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ';
+const vowels = `aeiouvüAEIOUVÜ${toneMarkedVowels}`;
+const consonants = 'bpmfdtnlgkhjqxrzcsyw';
+
+// Specific character classes for common patterns
+const basicVowels = 'aeiouvüAEIOUVÜ';
+const aoeVowels = 'aoeāáǎàēéěèōóǒò';
+const consonantsEnding = 'bcdfghjklmnpqrstvwxyz';
+const vowelsWithNG = 'aeiouvüngrAEIOUVÜNGR';
+
+// Pre-compiled regex patterns
+const wordSplitPattern = new RegExp(`(\\s+|[^\\w${toneMarkedVowels}]+)`);
+const wordPattern = new RegExp(`^[\\w${toneMarkedVowels}]+$`, 'i');
+
+// Helper function to build syllable pattern
+function buildSyllablePattern() {
+  return new RegExp(
+    `(?:zh|ch|sh|[${consonants}])?` +  // optional initial (include r)
+    `(?:[iuvü${toneMarkedVowels}])?` +    // optional medial
+    `(?:` +
+      // Complex compound finals (longest first)
+      `(?:[${vowels}](?:iang|iong|uang|ueng|ian|iao|ian|ing|ong|ang|eng|ai|ao|ei|ou|an|en|in|un|vn))|` +
+      `(?:[${vowels}](?:i|o|u|ng|n))|` +  // simpler compound finals (ng before n)
+      `(?:[${vowels}])` +                   // single vowels
+    `)` +
+    `(?:r(?![a-zü${toneMarkedVowels}]))?`,  // optional erhua (r not followed by vowel)
+    'gi'
+  );
+}
+
 function toToneMarks(inputText, options = {}) {
   const { apostrophes = true } = options;
   let outputText = "";
@@ -39,7 +76,7 @@ function toToneMarks(inputText, options = {}) {
     if (!(currentChar.match(/[1-5]/))) {
       if (vowelSet.has(currentChar)) foundVowels++;
       // if the last character was a vowel and this isn't...
-      if (foundVowels !== 0 && currentChar.match(/[^aeiouvüngr]/i) || currentChar === "") {
+      if (foundVowels !== 0 && currentChar.match(new RegExp(`[^${vowelsWithNG}]`, 'i')) || currentChar === "") {
         outputText += currentWord;
         currentWord = currentChar;
       } else {
@@ -55,7 +92,7 @@ function toToneMarks(inputText, options = {}) {
       // step through each character in word
 
       // If it doesn't have vowels, just output it
-      if (!currentWord.match(/[aeiouvü]/i)) {
+      if (!currentWord.match(new RegExp(`[${basicVowels}]`, 'i'))) {
         outputText += (currentWord + currentChar);
         currentWord = "";
       }
@@ -68,7 +105,7 @@ function toToneMarks(inputText, options = {}) {
       // add apostrophes before 2nd or later syllables starting with a, e and o
       if (apostrophes) {
         const prevChar = outputText.slice(-1);
-        if (prevChar.length > 0 && !prevChar.match(/[\s\-.,!?;:]/) && currentWord[0]?.match(/[aeo]/i)) {
+        if (prevChar.length > 0 && !prevChar.match(/[\s\-.,!?;:]/) && currentWord[0]?.match(new RegExp(`[${aoeVowels}]`, 'i'))) {
           outputText += "'";
         }
       }
@@ -111,14 +148,6 @@ function convertToUmlautIfV(char) {
 
 // Helper function to strip tones and lowercase for syllable boundary detection
 function stripTonesAndLowercase(text) {
-  // Create reverse mapping from tone-marked vowels to base vowels
-  const toneToBase = {};
-  for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
-    toneMarks.forEach((toneMark, index) => {
-      toneToBase[toneMark] = baseVowel.toLowerCase();
-    });
-  }
-  
   return text.split('').map(char => {
     if (toneToBase[char]) { return toneToBase[char]; }
     return char.toLowerCase();
@@ -128,24 +157,7 @@ function stripTonesAndLowercase(text) {
 // Helper function to determine syllable boundaries using Pinyin orthography rules
 function findSyllableBoundaries(text) {
   const boundaries = [];
-  
-  // Define character classes including tone-marked vowels
-  const allVowels = `aeiouvüAEIOUVÜ${toneMarkedVowels}`;
-  const allConsonants = 'bpmfdtnlgkhjqxrzcsyw';
-  
-  // Pinyin syllable pattern - more restrictive to avoid matching English words
-  const syllablePattern = new RegExp(
-    `(?:zh|ch|sh|[${allConsonants}])?` +  // optional initial (include r)
-    `(?:[iuvü${toneMarkedVowels}])?` +    // optional medial
-    `(?:` +
-      // Complex compound finals (longest first)
-      `(?:[${allVowels}](?:iang|iong|uang|ueng|ian|iao|ian|ing|ong|ang|eng|ai|ao|ei|ou|an|en|in|un|vn))|` +
-      `(?:[${allVowels}](?:i|o|u|ng|n))|` +  // simpler compound finals (ng before n)
-      `(?:[${allVowels}])` +                   // single vowels
-    `)` +
-    `(?:r(?![a-zü${toneMarkedVowels}]))?`,  // optional erhua (r not followed by vowel)
-    'gi'
-  );
+  const syllablePattern = buildSyllablePattern();
   
   let match;
   while ((match = syllablePattern.exec(text)) !== null) {
@@ -164,7 +176,7 @@ function findSyllableBoundaries(text) {
     // Check if next syllable starts with a/o/e and should be separated
     if (next) {
       const nextSyllable = text.slice(next.start, next.end);
-      const nextStartsWithAOE = /^[aoeāáǎàēéěèōóǒò]/i.test(nextSyllable);
+      const nextStartsWithAOE = new RegExp(`^[${aoeVowels}]`, 'i').test(nextSyllable);
       
       // Check if there's already an apostrophe between syllables
       const hasApostrophe = text.slice(current.end, next.start).includes("'");
@@ -177,7 +189,7 @@ function findSyllableBoundaries(text) {
         
         if (isSameWord) {
           const currentSyllable = text.slice(current.start, current.end);
-          if (currentSyllable.length > 1 && /[bcdfghjklmnpqrstvwxyz]$/i.test(currentSyllable)) {
+          if (currentSyllable.length > 1 && new RegExp(`[${consonantsEnding}]$`, 'i').test(currentSyllable)) {
             // Adjust current boundary to exclude the last consonant
             processedBoundaries[processedBoundaries.length - 1] = {
               start: current.start,
@@ -219,13 +231,6 @@ function extractToneNumber(syllable) {
 
 // strips tone marks from a syllable while preserving capitalization
 function stripToneFromSyllable(syllable) {
-  const toneToBase = {};
-  for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
-    toneMarks.forEach((toneMark, index) => {
-      toneToBase[toneMark] = baseVowel;
-    });
-  }
-  
   return syllable.split('').map(char => {
     if (toneToBase[char]) {
       // Preserve ü/Ü as-is (don't convert to v/V)
@@ -261,11 +266,11 @@ function toToneNumbers(text, options = {}) {
   if (!text) return text;
   
   // Split text into words and process each word
-  const words = text.split(new RegExp(`(\\s+|[^\\w${toneMarkedVowels}]+)`));
+  const words = text.split(wordSplitPattern);
 
   return words.map(word => {
     // Skip non-word characters (spaces, punctuation, etc.)
-    if (!new RegExp(`^[\\w${toneMarkedVowels}]+$`).test(word)) {
+    if (!wordPattern.test(word)) {
       return word;
     }
     

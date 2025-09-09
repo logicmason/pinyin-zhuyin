@@ -1,4 +1,4 @@
-const { toneMarkTable, vowels, consonants, toToneMarks } = require('./tone-tool');
+const { toneMarkTable, letters, vowels, consonants } = require('./tone-tool');
 
 const bpmfFinals = [
   "ㄧㄞ", "ㄧㄠ", "ㄧㄡ", "ㄧㄚ", "ㄧㄛ", "ㄧㄝ", "ㄧㄢ", "ㄧㄣ", "ㄧㄤ", "ㄧㄥ",
@@ -144,12 +144,51 @@ function applyRules(s, rules) {
   return s;
 }
 
-// (tone placement handled by toToneMarks)
+// ----- Tone-mark helpers -----
+
+// Mark tone 1–4 on a single pinyin syllable (neutral/empty → unmarked)
+function applyToneMark(pinyinSyllable, toneNum) {
+  const n = parseInt(toneNum, 10);
+  if (!n || n < 1 || n > 4) return pinyinSyllable;
+
+  const s = pinyinSyllable;
+  const lower = s.toLowerCase();
+
+  // Priority: a > o > e > ou(mark 'o') > otherwise last vowel (handles iu/ui)
+  const place = (vowel) => {
+    const idx = lower.lastIndexOf(vowel);
+    if (idx === -1) return s;
+    const rep = toneMarkTable[vowel][n - 1];
+    return s.slice(0, idx) + rep + s.slice(idx + 1);
+  };
+
+  if (lower.includes("a")) return place("a");
+  if (lower.includes("o")) return place("o");
+  if (lower.includes("e")) return place("e");
+  if (lower.includes("ou")) {
+    const idx = lower.indexOf("ou");
+    const rep = toneMarkTable["o"][n - 1];
+    return s.slice(0, idx) + rep + s.slice(idx + 1);
+  }
+  const m = /[aeiouü](?!.*[aeiouü])/.exec(lower);
+  return m ? place(m[0]) : s;
+}
 
 // Convert the whole string from numbers → marks, auto-detecting erhua forms
 function numbersToMarks(s) {
-  // Delegate to tone-tool’s pinyin number→mark converter without inserting apostrophes
-  return toToneMarks(s, { apostrophes: false });
+  let out = s;
+
+  // erhua (before-r): hua1r → huār
+  out = out.replace(/([a-zü]+)([1-4])r/gi, (_, base, n) => applyToneMark(base, n) + "r");
+  // erhua (after-r):  huar1 → huār
+  out = out.replace(/([a-zü]+)r([1-4])/gi, (_, base, n) => applyToneMark(base, n) + "r");
+
+  // non-erhua: bai1 → bāi
+  out = out.replace(/([a-zü]+)([1-4])/gi, (_, base, n) => applyToneMark(base, n));
+
+  // drop any leftover digits (neutral 5 or stragglers)
+  out = out.replace(/[1-5]/g, "");
+  return out;
 }
 
 // Zhuyin syllable segmenter (regex + MoE-style erhua):

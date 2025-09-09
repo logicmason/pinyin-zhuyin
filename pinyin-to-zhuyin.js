@@ -1,4 +1,4 @@
-const { toneMarkTable, letters, vowels, consonants, toToneMarks } = require('./tone-tool');
+const { toneMarkTable, vowels, consonants, toToneMarks } = require('./tone-tool');
 
 const bpmfFinals = [
   "ㄧㄞ", "ㄧㄠ", "ㄧㄡ", "ㄧㄚ", "ㄧㄛ", "ㄧㄝ", "ㄧㄢ", "ㄧㄣ", "ㄧㄤ", "ㄧㄥ",

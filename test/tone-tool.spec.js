@@ -216,6 +216,25 @@ describe('Pinyin Tone Tool', () => {
     });
   });
 
+  it('should correctly convert a tone-marked paragraph to numbers', () => {
+    const cases = [
+      { input: `Bùjiǔ, Liú lǎoshī yòu huílai le, hòumian gēnzhe Shùyùn pàngpàng de wàipó. Wàipó jǔzhe làzhú, yīlù dàshēng de dūnangzhe shénme. Wǒ gēn Shùyùn xiàng liǎng ge mù'ǒu, bù gǎn chū yī shēng. Shùyùn de wàipó yòng Guǎngxīhuà duì wǒmen shuō, “Nǐmen yào sǐ a! Dàshuǐ bǎ shé chōng chūlai; nǐmen bù pà shé lái yǎosǐ nǐmen a?”
+
+...
+
+Shíwǔ nián qián, wǒ qī suì de wàishengnǚ Wáng Qífāng cóng Bōshìdùn jìle yī fēng Yīngwén xìn gěi wǒ, wèn wǒ Fèichéng jiāoqū háoyǔ dáilai de dàshuǐ yǒu méiyou gěi wǒ jiā yǐnqi shénme máfan. Tā yě yāoqǐng wǒ qù Bōshìdùn wánr. Yǐhòu wǒ jīhū měi nián dōu dào Bōshìdùn qù.`,
+expected: `Bu4jiu3, Liu2 lao3shi1 you4 hui2lai5 le5, hou4mian5 gen1zhe5 Shu4yun4 pang4pang4 de5 wai4po2. Wai4po2 ju3zhe5 la4zhu2, yi1lu4 da4sheng1 de5 du1nang5zhe5 shen2me5. Wo3 gen1 Shu4yun4 xiang4 liang3 ge5 mu4'ou3, bu4 gan3 chu1 yi1 sheng1. Shu4yun4 de5 wai4po2 yong4 Guang3xi1hua4 dui4 wo3men5 shuo1, “Ni3men5 yao4 si3 a5! Da4shui3 ba3 she2 chong1 chu1lai5; ni3men5 bu4 pa4 she2 lai2 yao3si3 ni3men5 a5?”
+
+...
+
+Shi2wu3 nian2 qian2, wo3 qi1 sui4 de5 wai4sheng5nü3 Wang2 Qi2fang1 cong2 Bo1shi4dun4 ji4le5 yi1 feng1 Ying1wen2 xin4 gei3 wo3, wen4 wo3 Fei4cheng2 jiao1qu1 hao2yu3 dai2lai5 de5 da4shui3 you3 mei2you5 gei3 wo3 jia1 yin3qi5 shen2me5 ma2fan5. Ta1 ye3 yao1qing3 wo3 qu4 Bo1shi4dun4 wanr2. Yi3hou4 wo3 ji1hu1 mei3 nian2 dou1 dao4 Bo1shi4dun4 qu4.` },
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = toToneNumbers(input, { showNeutralTone: true });
+      expect(actual).to.equal(expected);
+    });
+  });
+
   it('should not emit neutral tone 5 when not configured', () => {
     const cases = [
       { input: 'guàibudé', expected: 'guai4bude2' },

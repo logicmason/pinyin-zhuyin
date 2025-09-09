@@ -8,21 +8,26 @@ const toneMarkTable = {
   o: ["ō", "ó", "ǒ", "ò"],
   u: ["ū", "ú", "ǔ", "ù"],
   "ü": ["ǖ", "ǘ", "ǚ", "ǜ"],
-  v: ["ǖ", "ǘ", "ǚ", "ǜ"],
   A: ["Ā", "Á", "Ǎ", "À"],
   E: ["Ē", "É", "Ě", "È"],
   I: ["Ī", "Í", "Ǐ", "Ì"],
   O: ["Ō", "Ó", "Ǒ", "Ò"],
   U: ["Ū", "Ú", "Ǔ", "Ù"],
-  //                        for readability
+  //                        space for readability
   "Ü": ["Ǖ", "Ǘ", "Ǚ", "Ǜ"],
-  "V": ["Ǖ", "Ǘ", "Ǚ", "Ǜ"]
-};
+}
 
-const toneToBase = {};
+const toneMarkedToBase = {};
 for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
   toneMarks.forEach((toneMark, index) => {
-    toneToBase[toneMark] = baseVowel.toLowerCase();
+    toneMarkedToBase[toneMark] = baseVowel.toLowerCase();
+  });
+}
+
+const toneMarkedToNumber = {};
+for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
+  toneMarks.forEach((toneMark, index) => {
+    toneMarkedToNumber[toneMark] = index + 1; // 1-4 for tones
   });
 }
 
@@ -88,7 +93,7 @@ function toToneMarks(inputText, options = {}) {
       let toneNum = Number(currentChar);
       let wordLen = currentWord.length;
       foundVowels = 0;
-      let useVowel = 1; // which vowel (1st or 2nd) will get the tone mark
+      let useVowel = 1; // 1st or 2nd vowel will get the tone mark
       // step through each character in word
 
       // If it doesn't have vowels, just output it
@@ -135,9 +140,9 @@ function toToneMarks(inputText, options = {}) {
 }
 
 function applyToneToVowel(charInWord, toneNum) {
-  if (toneNum <= 4) { return toneMarkTable[charInWord][toneNum - 1]; }
-  if (toneNum === 5) { return convertToUmlautIfV(charInWord); }
-  return charInWord;
+  const char = convertToUmlautIfV(charInWord);
+  if (toneNum <= 4) { return toneMarkTable[char][toneNum - 1]; }
+  return char;
 }
 
 function convertToUmlautIfV(char) {
@@ -146,15 +151,14 @@ function convertToUmlautIfV(char) {
   return char;
 }
 
-// Helper function to strip tones and lowercase for syllable boundary detection
 function stripTonesAndLowercase(text) {
   return text.split('').map(char => {
-    if (toneToBase[char]) { return toneToBase[char]; }
+    if (toneMarkedToBase[char]) { return toneMarkedToBase[char]; }
     return char.toLowerCase();
   }).join('');
 }
 
-// Helper function to determine syllable boundaries using Pinyin orthography rules
+// Determines syllable boundaries using pinyin orthography rules
 function findSyllableBoundaries(text) {
   const boundaries = [];
   const syllablePattern = buildSyllablePattern();
@@ -164,8 +168,6 @@ function findSyllableBoundaries(text) {
     boundaries.push({ start: match.index, end: match.index + match[0].length });
   }
   
-  // Apply apostrophe placement rule: if a syllable starting with a/o/e follows another syllable,
-  // treat it as if there's an apostrophe between them
   const processedBoundaries = [];
   for (let i = 0; i < boundaries.length; i++) {
     const current = boundaries[i];
@@ -173,17 +175,17 @@ function findSyllableBoundaries(text) {
     
     processedBoundaries.push(current);
     
-    // Check if next syllable starts with a/o/e and should be separated
+    // check if next syllable starts with a/o/e and should be separated
     if (next) {
       const nextSyllable = text.slice(next.start, next.end);
       const nextStartsWithAOE = new RegExp(`^[${aoeVowels}]`, 'i').test(nextSyllable);
       
-      // Check if there's already an apostrophe between syllables
+      // check if there's already an apostrophe between syllables
       const hasApostrophe = text.slice(current.end, next.start).includes("'");
       
       if (nextStartsWithAOE && !hasApostrophe) {
-        // Apply apostrophe rule: the last consonant goes with the next syllable
-        // But only if they're part of the same word (no space between them)
+        // Apply apostrophe rule:the last consonant goes with the next syllable
+        // but only if they're part of the same word (no space between them)
         const gap = text.slice(current.end, next.start);
         const isSameWord = !gap.includes(' ');
         
@@ -210,52 +212,37 @@ function findSyllableBoundaries(text) {
 }
 
 function extractToneNumber(syllable) {
-  // Create reverse mapping from tone-marked vowels to tone numbers
-  const toneToNumber = {};
-  for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
-    toneMarks.forEach((toneMark, index) => {
-      toneToNumber[toneMark] = index + 1; // 1-4 for tones
-    });
-  }
-  
-  // Look for tone-marked vowels in the syllable
   for (const char of syllable) {
-    if (toneToNumber[char]) {
-      return toneToNumber[char];
+    if (toneMarkedToNumber[char]) {
+      return toneMarkedToNumber[char];
     }
   }
-  
-  // No tone mark found - this is a neutral tone
+  // Treat no tone mark as neutral tone
   return 5;
 }
 
 // strips tone marks from a syllable while preserving capitalization
 function stripToneFromSyllable(syllable) {
   return syllable.split('').map(char => {
-    if (toneToBase[char]) {
-      // Preserve ü/Ü as-is (don't convert to v/V)
-      if ("ǖǘǚǜǕǗǙǛ".includes(char)) { return 'ü'; }
-      return toneToBase[char];
+    if (toneMarkedToBase[char]) {
+      return toneMarkedToBase[char];
     }
     return char;
   }).join('');
 }
 
-// Helper function to check if a word is clearly non-Pinyin
+// Does rough check of if a word is clearly non-Pinyin
 function isNonPinyinWord(word) {
-  // Use the existing syllable segmentation logic to test if the word can be fully segmented
   const boundaries = findSyllableBoundaries(word);
   
-  // If no syllables were found, it's not Pinyin
-  if (boundaries.length === 0) {
-    return true;
-  }
+  // If no syllables were found, it's not pinyin
+  if (boundaries.length === 0) { return true; }
   
-  // If the syllables don't cover the entire word, it's not Pinyin
-  const totalSyllableLength = boundaries.reduce((sum, boundary) => sum + (boundary.end - boundary.start), 0);
-  if (totalSyllableLength < word.length) {
-    return true;
-  }
+  const totalSyllableLength =
+    boundaries.reduce((sum, b) => sum + (b.end - b.start), 0);
+
+  // If the syllables don't cover the entire word, it's not pinyin
+  if (totalSyllableLength < word.length) { return true; }
   
   return false;
 }
@@ -274,9 +261,8 @@ function toToneNumbers(text, options = {}) {
       return word;
     }
     
-    // Check if this word is clearly non-Pinyin
     if (isNonPinyinWord(word)) {
-      return word; // Leave non-Pinyin words unchanged
+      return word; // Leave clearly non-Pinyin words unchanged
     }
     
     // Process as Pinyin word

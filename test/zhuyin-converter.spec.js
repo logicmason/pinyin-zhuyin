@@ -5,7 +5,7 @@ const { p2z } = require('../pinyin-to-zhuyin.js');
 const { z2p } = require('../pinyin-to-zhuyin.js');
 // Import the converter
 describe('Pinyin to Zhuyin Converter', () => {
-  let opts = { tonemarks: true }
+  let opts = { tonemarks: true, inputHasToneMarks: true }
 
   it('should handle ü (yu) correctly', () => {
     const testCases = [
@@ -106,7 +106,7 @@ describe('Pinyin to Zhuyin Converter', () => {
   it('should handle syllable boundary ambiguity', () => {
     const testCases = [
       { input: "xiang1", expected: "ㄒㄧㄤ" },
-      { input: "xi'an1", expected: "ㄒㄧ ㄢ" }
+      { input: "xi'an1", expected: "˙ㄒㄧ ㄢ" }
     ];
 
     testCases.forEach(({ input, expected }) => {
@@ -196,6 +196,26 @@ describe('Pinyin to Zhuyin Converter', () => {
         `"${input}" should segment to "${expected}" but got "${actual}"`);
     });
   });
+
+  it('should handle input with tone marks', () => {
+    const normalize = s => s.replace(/[˙ˊˇˋ1-5]/g, '');
+    const cases = [
+      { input: "zǎo ān",
+        expected: "ㄗㄠˇ ㄢ" },
+      { input: "yī méi jièzhǐ",
+        expected: "ㄧ ㄇㄟˊ ㄐㄧㄝˋ ㄓˇ" },
+      { input: "Wǒ fàng nǐ yī mǎ",
+        expected: "ㄨㄛˇ ㄈㄤˋ ㄋㄧˇ ㄧ ㄇㄚˇ" },
+      { input: "zhège dìfāng, hǎoxiàng wǒ lái guò le!",
+        expected: "ㄓㄜˋ ˙ㄍㄜ ㄉㄧˋ ㄈㄤ, ㄏㄠˇ ㄒㄧㄤˋ ㄨㄛˇ ㄌㄞˊ ㄍㄨㄛˋ ˙ㄌㄜ!" },
+        // input: ""
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = p2z(input, { tonemarks: true, inputHasToneMarks: true });
+      expect(normalize(actual)).to.equal(normalize(expected),
+        `"${input}" should segment to "${expected}" but got "${actual}"`);
+    });
+  });
 });
 
 describe('Zhuyin to Pinyin Converter', () => {
@@ -206,7 +226,7 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄋㄧˇㄏㄠˇ", expected: "ni3hao3" },
       { input: "ㄅㄞㄅㄞ", expected: "bai1bai1" },
       { input: "ㄖㄣˊ", expected: "ren2" },
-      { input: "ㄉㄜ˙", expected: "de5" },
+      { input: "˙ㄉㄜ", expected: "de5" },
       { input: "ㄐㄩㄝˊㄉㄧㄥˋ", expected: "jue2ding4" },
       { input: "ㄘㄜˋㄌㄩㄝˋ", expected: "ce4lüe4" },
       { input: "ㄦˊㄑㄧㄝˇ", expected: "er2qie3" },
@@ -215,8 +235,25 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄗㄜˊㄖㄣˋ", expected: "ze2ren4" },
       { input: "ㄧㄚˋ", expected: "ya4" },
       { input: "ㄒㄧㄚˋ", expected: "xia4" },
-      { input: "ㄧㄛ˙", expected: "yo5" },
+      { input: "˙ㄧㄛ", expected: "yo5" },
       { input: "ㄧㄞˊ", expected: "yai2" },
+    ];
+
+    testCases.forEach(({ input, expected }) => {
+      const actual = z2p(input, opts);
+      expect(actual).to.equal(expected,
+        `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+  });
+
+  it("it shouldn't break when neutral tones are on the wrong side", () => {
+    const testCases = [
+      { input: "˙ㄉㄜ", expected: "de5" },
+      { input: "ㄉㄜ˙", expected: "de5" },
+      { input: "ㄏㄠˇ ㄇㄚ˙", expected: "hao3 ma5" },
+      { input: "ㄞ˙", expected: "ai5" },
+      { input: "ㄧㄛ˙", expected: "yo5" },
+      { input: "ㄖㄣˋㄕ˙ㄇㄚ˙", expected: "ren4shi5ma5" },
     ];
 
     testCases.forEach(({ input, expected }) => {
@@ -288,17 +325,17 @@ describe('Zhuyin to Pinyin Converter', () => {
     });
   });
 
-  it('should preserve spaces and punctuation', () => {
+  it('should preserve spaces and punctuation unless set to convert', () => {
     const testCases = [
       { input: "ㄧㄡˇ ㄖㄣˊ ㄗㄞˋ ㄇㄚ˙?", expected: "you3 ren2 zai4 ma5?" },
       { input: "ㄓㄜˋㄍㄜ˙ ㄉㄧˋㄈㄤ, ㄏㄠˇㄒㄧㄤˋ ㄨㄛˇ ㄌㄞˊ ㄍㄨㄛˋ ㄌㄜ˙!", expected: "zhe4ge5 di4fang1, hao3xiang4 wo3 lai2 guo4 le5!" },
       { input: "ㄋㄧˇㄏㄠˇ... ㄨㄛˇ ㄕˋ ㄒㄧㄠˇㄓㄤ", expected: "ni3hao3... wo3 shi4 xiao3zhang1" },
-      { input: "ㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ",
-        expected: "jiang1tai4gong1 diao4yu2, yuan4zhe3 shang4gou3" }
+      { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄙㄨㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
+        expected: "su2hua4 shuo1：「su1jiang1tai4gong1 diao4yu2, yuan4zhe3 shang4gou3」" }
     ];
 
     testCases.forEach(({ input, expected }) => {
-      const actual = z2p(input, opts);
+      const actual = z2p(input, { tonemarks: false, convertPunctuation: false });
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
@@ -308,12 +345,14 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄓㄜˋㄍㄜ˙ ㄉㄧˋㄈㄤ, ㄏㄠˇㄒㄧㄤˋ ㄨㄛˇ ㄌㄞˊ ㄍㄨㄛˋ ㄌㄜ˙!",
         expected: "zhège dìfāng, hǎoxiàng wǒ lái guò le!" },
       { input: "ㄋㄧˇㄏㄠˇ... ㄨㄛˇ ㄕˋ ㄒㄧㄠˇㄓㄤ", expected: "nǐhǎo... wǒ shì xiǎozhāng" },
-      { input: "ㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ",
-        expected: "jiāngtàigōng diàoyú, yuànzhě shànggǒu" }
+      { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄙㄨㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
+        expected: "súhuà shuō: “sūjiāngtàigōng diàoyú, yuànzhě shànggǒu”" },
+      { input: "ㄌㄠˇ ㄕ ㄕㄨㄛ: “ㄋㄧˇ ˙ㄇㄣ ㄧㄠˋ ㄐㄧˋ ㄓㄨˋ ㄍㄨㄛˊ ㄈㄨˋ ㄕㄨㄛ ˙ㄉㄜ ‘ㄑㄧㄥ ㄋㄧㄢˊ ㄧㄠˋ ㄌㄧˋ ㄓˋ ㄗㄨㄛˋ ㄉㄚˋ ㄕˋ, ㄅㄨˋ ㄧㄠˋ ㄗㄨㄛˋ ㄉㄚˋ ㄍㄨㄢ’ ㄓㄜˋ ㄐㄩˋ ㄏㄨㄚˋ.”",
+        expected: "Lǎoshī shuō:`Nǐmen yào jì zhù guófù shuō de “qīngnián yào lìzhì zuò dàshì, bùyào zuò dà guān” zhè jù huà.'" }
     ];
 
     moreTestCases.forEach(({ input, expected }) => {
-      const actual = z2p(input, { tonemarks: true });
+      const actual = z2p(input, { tonemarks: true, convertPunctuation: true });
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });

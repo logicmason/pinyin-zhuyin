@@ -1,4 +1,11 @@
-const { toneMarkTable, letters, vowels, consonants } = require('./tone-tool');
+// Bidirectional Pinyin <-> Zhuyin converter
+// Uses tone-tool.js library to handle pinyin tone conversion
+// Constants at top of file, then helpers and then finally primary utilities
+// Primary utilities: p2z, z2p
+// 
+// Copyright Mark Wilbur, MIT License
+
+const { toneMarkTable, letters, vowels, consonants, toToneNumbers } = require('./tone-tool');
 
 const bpmfFinals = [
   "ㄧㄞ", "ㄧㄠ", "ㄧㄡ", "ㄧㄚ", "ㄧㄛ", "ㄧㄝ", "ㄧㄢ", "ㄧㄣ", "ㄧㄤ", "ㄧㄥ",
@@ -11,6 +18,10 @@ const bpmfFinals = [
 const bpmfInitials = "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙ";
 const bpmfSyllabicOnly = "ㄓㄔㄕㄖㄗㄘㄙ";
 const bpmfTones = "˙ˊˇˋ";
+const ChineseToEnglishPunctuation = {
+  "，": ",", "。": ".", "？": "?", "！": "!", "；": ";", "：": ":",
+  "「": "“", "」": "”", "『": "‘", "』": "’" 
+};
 
 // create a regex that greedily matches the longest possible final
 const finalMatcher = `(?:${bpmfFinals.join("|")})`;
@@ -256,7 +267,8 @@ function bpmfSyllableToPinyin(zh, opts) {
   if (hasInitial(core)) {
     py = applyRules(core, finalRules);
     py = applyRules(py, initialRules);
-  } else {
+  }
+  else {
     py = applyRules(core, noInitialRules);
     py = applyRules(py, finalRules);
   }
@@ -279,10 +291,11 @@ function bpmfSyllableToPinyin(zh, opts) {
 const z2p = function (zhuyin, options = {}) {
   const {
     erhuaTone = "after-r",
-    umlautMode = "collapse-nl-uan",
     tonemarks = true,
+    convertPunctuation = false,   // does not convert ,.?!;: to ，,。？！；： 
     markNeutralTone = !tonemarks, // treats zhe4ge in pinyin as zhe4ge5
-    apostrophes = "auto"
+    apostrophes = "auto", // true to add, false to skip, auto to add only with tone marks
+    umlautMode = "collapse-nl-uan",
   } = options;
 
   // normalize ・ → space
@@ -302,39 +315,45 @@ const z2p = function (zhuyin, options = {}) {
       if (addApos && prevWasSyllable && /^[aoe]/i.test(pyNum)) pieces.push("'");
       pieces.push(pyNum);
       prevWasSyllable = true;
-    } else {
+    }
+    else {
       pieces.push(token);
       prevWasSyllable = false;
     }
   }
 
-  const outNums = pieces.join("");
+  let output = pieces.join("");
+
+  if (convertPunctuation) {
+    Object.keys(ChineseToEnglishPunctuation).forEach((key) => {
+      const rexp = new RegExp(key, "g");
+      output = output.replace(rexp, ChineseToEnglishPunctuation[key]);
+    });
+  }
 
   // Single switch to marks (auto-detects erhua style)
-  return tonemarks ? numbersToMarks(outNums) : outNums;
+  return tonemarks ? numbersToMarks(output) : output;
 };
 
 const p2z = function (pinyin = "", options = {}) {
   const {
-    tonemarks = true,       // true uses tone marks, false uses tone numbers
-    convertPunctuation = false
+    tonemarks = true,           // true uses tone marks, false uses tone numbers
+    inputHasToneMarks = true,   // handles input with tone-marked pinyin
+    convertPunctuation = false  // does not convert ,.?!;: to ，,。？！；： 
   } = options;
+  let output = pinyin;
 
-  let output = pinyin.toLowerCase();
+  if (inputHasToneMarks) { output = toToneNumbers(output); }
+  output = output.toLowerCase();
 
   const tones = { "1": "", "2": "ˊ", "3": "ˇ", "4": "ˋ", "5": "˙" };
+
 
   // Normalize erhua tones: move tone after 'r' onto the preceding syllable
   // e.g., duor5 -> duo5r; but do NOT change true syllable "er3"
   output = output.replace(/([a-zü]+)r([1-5])/gi, (m, base, n) => {
     return base.toLowerCase() === "e" ? m : `${base}${n}r`;
   });
-
-  // Identifyneutral tone for syllables without explicit numbers.
-  // Handle boundaries at end of string, punctuation, or apostrophes (syllable separators).
-  // Vowel-final syllables (e.g., "a", "xi", "nü"):
-
-  // Build regexes from smaller parts for readability
 
   // Apostrophe boundary: treat as syllable break only if it does NOT precede a toned syllable
   const danglingApostrophe = `'(?![a-zü]+[1-5])`;
@@ -376,10 +395,9 @@ const p2z = function (pinyin = "", options = {}) {
   }
 
   if (convertPunctuation) {
-    const punctuation = { "，": ",", "。": ".", "？": "?", "！": "!", "；": ";", "：": ":" };
-    Object.keys(punctuation).forEach((key) => {
+    Object.keys(ChineseToEnglishPunctuation).forEach((key) => {
       const rexp = new RegExp(key, "g");
-      output = output.replace(rexp, punctuation[key]);
+      output = output.replace(rexp, ChineseToEnglishPunctuation[key]);
     });
   }
 

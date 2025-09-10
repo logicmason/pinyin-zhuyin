@@ -1,5 +1,12 @@
-// ancient, battle-tested code
-// be cautious about making any changes!
+// Pinyin tone conversion tools
+// Constants at top of file, then helpers and then finally primary utilities
+// Primary utilities: toToneMarks, toToneNumbers
+// Both are heavily tested, but toToneNumbers is partially AI-generated
+// toToneMarks is partially modernized from an ancient, battle-tested version
+// 
+// Copyright Mark Wilbur, MIT License
+
+// ----- Global Constants -----
 
 const toneMarkTable = {
   a: ["ā", "á", "ǎ", "à"],
@@ -24,13 +31,6 @@ for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
   });
 }
 
-const toneMarkedToNumber = {};
-for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
-  toneMarks.forEach((toneMark, index) => {
-    toneMarkedToNumber[toneMark] = index + 1; // 1-4 for tones
-  });
-}
-
 const vowelSet = new Set(['a', 'e', 'i', 'o', 'u', 'v', 'ü', 'A', 'E', 'I', 'O', 'U', 'V', 'Ü']);
 const umlatu = "ü";
 const capUmlatu = "Ü";
@@ -50,7 +50,9 @@ const vowelsWithNG = 'aeiouvüngrAEIOUVÜNGR';
 const wordSplitPattern = new RegExp(`(\\s+|[^\\w${toneMarkedVowels}]+)`);
 const wordPattern = new RegExp(`^[\\w${toneMarkedVowels}]+$`, 'i');
 
-// Helper function to build syllable pattern
+
+// ----- Helper Utilities -----
+
 function buildSyllablePattern() {
   return new RegExp(
     `(?:zh|ch|sh|[${consonants}])?` +  // optional initial (include r)
@@ -66,77 +68,11 @@ function buildSyllablePattern() {
   );
 }
 
-function toToneMarks(inputText, options = {}) {
-  const { apostrophes = true } = options;
-  let outputText = "";
-  let currentWord = "";
-  let currentChar = "";
-  let i = 0;
-  let foundVowels = 0;
-
-  for (i = 0; i <= inputText.length; i++) {
-    currentChar = inputText.charAt(i);
-
-    // numbers 1-5 are tone marks, build the word until we hit one
-    if (!(currentChar.match(/[1-5]/))) {
-      if (vowelSet.has(currentChar)) foundVowels++;
-      // if the last character was a vowel and this isn't...
-      if (foundVowels !== 0 && currentChar.match(new RegExp(`[^${vowelsWithNG}]`, 'i')) || currentChar === "") {
-        outputText += currentWord;
-        currentWord = currentChar;
-      } else {
-        currentWord += currentChar;
-      }
-    } // if !match 1-5
-    // the character must be a tone mark
-    else {
-      let toneNum = Number(currentChar);
-      let wordLen = currentWord.length;
-      foundVowels = 0;
-      let useVowel = 1; // 1st or 2nd vowel will get the tone mark
-      // step through each character in word
-
-      // If it doesn't have vowels, just output it
-      if (!currentWord.match(new RegExp(`[${basicVowels}]`, 'i'))) {
-        outputText += (currentWord + currentChar);
-        currentWord = "";
-      }
-
-      // the tone goes over the second vowel for these combinations
-      if (currentWord.match(/i[aeou]/i)) useVowel = 2;
-      if (currentWord.match(/u[aeio]/i)) useVowel = 2;
-      if (currentWord.match(/[vü]e/i)) useVowel = 2;
-
-      // add apostrophes before 2nd or later syllables starting with a, e and o
-      if (apostrophes) {
-        const prevChar = outputText.slice(-1);
-        if (prevChar.length > 0 && !prevChar.match(/[\s\-.,!?;:]/) && currentWord[0]?.match(new RegExp(`[${aoeVowels}]`, 'i'))) {
-          outputText += "'";
-        }
-      }
-
-      // We'll check either the first or the first two vowels, depending on which should have the tone
-      for (let j = 0; j <= wordLen && foundVowels < useVowel; j++) {
-        let tempWord = "";
-        const charInWord = currentWord.charAt(j);
-        if (vowelSet.has(charInWord)) {
-          foundVowels++;
-          const tonedChar = applyToneToVowel(charInWord, toneNum);
-
-          if (foundVowels >= useVowel) {
-            tempWord = Array.from(currentWord).map((char, k) => {
-              if (k === j) return tonedChar;
-              return convertToUmlautIfV(char);
-            }).join('');
-            currentWord = "";
-          }
-        }
-        outputText += tempWord;
-      }
-    }
-  }
-
-  return outputText;
+const toneMarkedToNumber = {};
+for (const [baseVowel, toneMarks] of Object.entries(toneMarkTable)) {
+  toneMarks.forEach((toneMark, index) => {
+    toneMarkedToNumber[toneMark] = index + 1; // 1-4 for tones
+  });
 }
 
 function applyToneToVowel(charInWord, toneNum) {
@@ -247,23 +183,89 @@ function isNonPinyinWord(word) {
   return false;
 }
 
+// ----- Primary Utilities -----
+
+function toToneMarks(inputText, options = {}) {
+  const { apostrophes = true } = options;
+  let outputText = "";
+  let currentWord = "";
+  let currentChar = "";
+  let i = 0;
+  let foundVowels = 0;
+
+  for (i = 0; i <= inputText.length; i++) {
+    currentChar = inputText.charAt(i);
+
+    // numbers 1-5 are tone marks, build the word until we hit one
+    if (!(currentChar.match(/[1-5]/))) {
+      if (vowelSet.has(currentChar)) foundVowels++;
+      // if the last character was a vowel and this isn't...
+      if (foundVowels !== 0 && currentChar.match(new RegExp(`[^${vowelsWithNG}]`, 'i')) || currentChar === "") {
+        outputText += currentWord;
+        currentWord = currentChar;
+      }
+      else { currentWord += currentChar; }
+    }
+    // the character matched 1-5, treat as a tone mark
+    else {
+      let toneNum = Number(currentChar);
+      let wordLen = currentWord.length;
+      foundVowels = 0;
+      let useVowel = 1; // 1st or 2nd vowel will get the tone mark
+      // step through each character in word
+
+      // If it doesn't have vowels, just output it
+      if (!currentWord.match(new RegExp(`[${basicVowels}]`, 'i'))) {
+        outputText += (currentWord + currentChar);
+        currentWord = "";
+      }
+
+      // the tone goes over the second vowel for these combinations
+      if (currentWord.match(/i[aeou]/i)) useVowel = 2;
+      if (currentWord.match(/u[aeio]/i)) useVowel = 2;
+      if (currentWord.match(/[vü]e/i)) useVowel = 2;
+
+      // add apostrophes before 2nd or later syllables starting with a, e and o
+      if (apostrophes) {
+        const prevChar = outputText.slice(-1);
+        if (prevChar.length > 0 && !prevChar.match(/[\s\-.,!?;:]/) && currentWord[0]?.match(new RegExp(`[${aoeVowels}]`, 'i'))) {
+          outputText += "'";
+        }
+      }
+
+      // We'll check either the first or the first two vowels, depending on which should have the tone
+      for (let j = 0; j <= wordLen && foundVowels < useVowel; j++) {
+        let tempWord = "";
+        const charInWord = currentWord.charAt(j);
+        if (vowelSet.has(charInWord)) {
+          foundVowels++;
+          const tonedChar = applyToneToVowel(charInWord, toneNum);
+
+          if (foundVowels >= useVowel) {
+            tempWord = Array.from(currentWord).map((char, k) => {
+              if (k === j) return tonedChar;
+              return convertToUmlautIfV(char);
+            }).join('');
+            currentWord = "";
+          }
+        }
+        outputText += tempWord;
+      }
+    }
+  }
+
+  return outputText;
+}
+
 function toToneNumbers(text, options = {}) {
   const { erhuaTone = 'after-r', showNeutralTone = true } = options;
-  
-  if (!text) return text;
-  
-  // Split text into words and process each word
   const words = text.split(wordSplitPattern);
+  if (!text) return text;
 
   return words.map(word => {
-    // Skip non-word characters (spaces, punctuation, etc.)
-    if (!wordPattern.test(word)) {
-      return word;
-    }
-    
-    if (isNonPinyinWord(word)) {
-      return word; // Leave clearly non-Pinyin words unchanged
-    }
+    // Skip non-word characters (spaces, punctuation, etc.) and non-pinyin words
+    if (!wordPattern.test(word)) { return word; }
+    if (isNonPinyinWord(word)) { return word; }
     
     // Process as Pinyin word
     const boundaries = findSyllableBoundaries(word);
@@ -286,13 +288,13 @@ function toToneNumbers(text, options = {}) {
         
         if (erhuaTone === 'after-r') {
           result += baseWithoutR + 'r' + toneNumber;
-        } else {
+        }
+        else {
           result += baseWithoutR + toneNumber + 'r';
         }
-      } else {
-        // Regular syllable - add tone number at the end
-        result += baseSyllable + toneNumber;
       }
+      // Regular syllable - add tone number at the end
+      else { result += baseSyllable + toneNumber; }
       
       lastBoundaryEnd = boundary.end;
     }
@@ -302,7 +304,6 @@ function toToneNumbers(text, options = {}) {
       result += word.slice(lastBoundaryEnd);
     }
     
-    // Handle showNeutralTone option
     if (!showNeutralTone) {
       result = result.replace(/5/g, '');
     }

@@ -1,4 +1,4 @@
-# Pinyin to Zhuyin Converter
+# Pinyin <-> Zhuyin Converter
 
 A comprehensive Node.js library and command-line tool for converting between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) Mandarin phonetic systems. This converter supports bidirectional conversion with advanced features like tone handling, erhua (儿化), and various output formats.
 
@@ -34,20 +34,48 @@ npm install pinyin-to-zhuyin
 
 ### Command Line Tools
 
-#### `p2z` - File Converter
+#### `p2z` - Pinyin to Zhuyin Converter
 
-Convert a pinyin text file to zhuyin:
+Convert pinyin text to zhuyin:
 
 ```bash
+# Convert file
 p2z input.txt
+
+# Convert from stdin
+echo "ni3hao3" | p2z
+
+# Show help
+p2z --help
 ```
 
-Example:
+**Options:**
+
+- `--tonemarks`: Use tone marks instead of tone numbers
+- `--no-neutral`: Do not mark neutral tones  
+- `--convert-punctuation`: Convert punctuation (Chinese ↔ English)
+- `--help`: Show help message
+
+#### `z2p` - Zhuyin to Pinyin Converter
+
+Convert zhuyin text to pinyin:
 
 ```bash
-echo "cheng2gong1le5!" | p2z
-# Output: ㄔㄥˊ ㄍㄨㄥ ˙ㄌㄜ!
+# Convert file
+z2p input.txt
+
+# Convert from stdin
+echo "ㄋㄧˇㄏㄠˇ" | z2p
+
+# Show help
+z2p --help
 ```
+
+**Options:**
+
+- `--tonemarks`: Use tone marks instead of tone numbers
+- `--convert-punctuation`: Convert punctuation (Chinese ↔ English)
+- `--help`: Show help message
 
 
 ### Programmatic API
@@ -184,8 +212,8 @@ z2p('ㄏㄨㄚㄦ', { erhuaTone: 'before-r' })  // hua1r
 z2p('ㄏㄨㄚㄦ', { erhuaTone: 'after-r' })   // huār1
 
 // Tone mark vs numbers
-p2z('ni3hao3', { tonemarks: true })   // ㄋㄧˇㄏㄠˇ
-p2z('ni3hao3', { tonemarks: false })  // ㄋㄧ3ㄏㄠ3
+p2z('ni3hao3', { tonemarks: true })   // ㄋㄧˇ ㄏㄠˇ
+p2z('ni3hao3', { tonemarks: false })  // ㄋㄧ3 ㄏㄠ3
 
 z2p('ㄋㄧˇㄏㄠˇ', { tonemarks: true })  // nǐhǎo
 z2p('ㄋㄧˇㄏㄠˇ', { tonemarks: false }) // ni3hao3
@@ -252,7 +280,7 @@ MIT License
 
 ```text
 pinyin-to-zhuyin/
-├── pinyin-to-zhuyin.js       # Main library
+├── pinyin-zhuyin.js          # Main library
 ├── tone-tool.js              # Tone utilities and helpers
 ├── p2z.js                    # Command-line pinyin to zhuyin converter
 ├── z2p.js                    # Command-line zhuyin to pinyin converter

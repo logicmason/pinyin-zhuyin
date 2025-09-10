@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "description": "Takes zhuyin (AKA \"bo po mo fo\") and converts it into pinyin.",
-  "main": "pinyin-to-zhuyin.js",
+  "main": "pinyin-zhuyin.js",
   "scripts": {
     "test": "nyc mocha --reporter spec"
   },

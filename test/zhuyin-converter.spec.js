@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { expect } from 'chai';
-import { p2z, z2p } from '../pinyin-to-zhuyin.js';
+import { p2z, z2p } from '../pinyin-zhuyin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Import the converter

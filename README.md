@@ -1,6 +1,6 @@
 # Pinyin to Zhuyin Converter
 
-A comprehensive Node.js library and command-line tool for converting between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) phonetic systems. This converter supports bidirectional conversion with advanced features like tone handling, erhua (儿化), and various output formats.
+A comprehensive Node.js library and command-line tool for converting between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) Mandarin phonetic systems. This converter supports bidirectional conversion with advanced features like tone handling, erhua (儿化), and various output formats.
 
 ## Features
 
@@ -10,7 +10,7 @@ A comprehensive Node.js library and command-line tool for converting between Pin
 - **Erhua Support**: Handles northern dialect erhua (儿化) with flexible tone placement
 - **Umlaut Handling**: Supports both `ü` and `v` for the same sound
 - **Syllable Segmentation**: Intelligent syllable boundary detection
-- **Command Line Tools**: Both file-based and interactive conversion modes
+- **Command Line Tools**: Basic CLI interface
 - **Comprehensive Test Suite**: Extensive test coverage for edge cases
 
 ## Installation
@@ -35,6 +35,7 @@ npm install pinyin-to-zhuyin
 ### Command Line Tools
 
 #### `p2z` - File Converter
+
 Convert a pinyin text file to zhuyin:
 
 ```bash
@@ -42,41 +43,28 @@ p2z input.txt
 ```
 
 Example:
+
 ```bash
 echo "cheng2gong1le5!" | p2z
 # Output: ㄔㄥˊ ㄍㄨㄥ ˙ㄌㄜ!
 ```
 
-#### `p2z-stream` - Interactive Mode
-Start an interactive conversion session:
-
-```bash
-p2z-stream
-```
-
-Example session:
-```bash
-> ni3hao3
-ㄋㄧˇ ㄏㄠˇ
-> you3 ren2 zai4 ma5?
-ㄧㄡˇ ㄖㄣˊ ㄗㄞˋ ㄇㄚ˙?
-> exit
-```
 
 ### Programmatic API
 
 #### Pinyin to Zhuyin (`p2z`)
 
 ```javascript
-const { p2z } = require('pinyin-to-zhuyin');
+import { p2z } from 'pinyin-to-zhuyin';
 
 // Basic conversion
 console.log(p2z('ni3hao3')); // ㄋㄧˇㄏㄠˇ
 
 // With options
 const options = {
-  tonemarks: true,          // Use tone marks instead of numbers
-  convertPunctuation: false // Convert Chinese punctuation
+  tonemarks: true,           // Use tone marks instead of numbers
+  inputHasToneMarks: true,   // Handle input with tone marks (instead of numbers)
+  convertPunctuation: false  // Convert Chinese punctuation
 };
 
 console.log(p2z('Wo3 de ke4ben3', options)); // ㄨㄛˇ ˙ㄉㄜ ㄎㄜˋ ㄅㄣˇ
@@ -85,7 +73,7 @@ console.log(p2z('Wo3 de ke4ben3', options)); // ㄨㄛˇ ˙ㄉㄜ ㄎㄜˋ ㄅ�
 #### Zhuyin to Pinyin (`z2p`)
 
 ```javascript
-const { z2p } = require('pinyin-to-zhuyin');
+import { z2p } from 'pinyin-to-zhuyin';
 
 // Basic conversion
 console.log(z2p('ㄋㄧˇㄏㄠˇ')); // nǐhǎo
@@ -94,20 +82,36 @@ console.log(z2p('ㄋㄧˇㄏㄠˇ')); // nǐhǎo
 const options = {
   erhuaTone: 'after-r',          // Place pinyin tone after 'r' in erhua
   umlautMode: 'collapse-nl-uan', // Handle n/l + üan → uan (see: https://www.moedict.tw/%E6%94%A3)
-  tonemarks: true,               // Use tone marks
+  tonemarks: true,               // Use tone marks (instead of numbers)
   markNeutralTone: false,        // Hide neutral tone numbers
-  apostrophes: 'auto'            // Add apostrophes for syllable boundaries
+  apostrophes: 'auto'            // Add apostrophes where required at syllable boundaries
 };
 
 console.log(z2p('ㄏㄨㄚㄦ', options)); // huār
 ```
 
-### Tone utilities
+### Tone utilities (tone-tool.js)
 
-- `toToneMarks(input: string)` – Convert Pinyin with tone numbers to tone marks (adds apostrophes where required). Defined in `tone-tool.js`.
+- `toToneMarks(input: string)` – Convert Pinyin with tone numbers to tone marks.
+- `toToneNumbers(input: string)` – Convert Pinyin with tone marks to tone numbers.
 - Tone data/helpers live in `tone-tool.js` and are reused by the converters:
   - `toneMarkTable` – tone placement mapping.
   - `vowels`, `consonants` – character-class fragments used to build tokenizer regexes in `p2z`.
+
+This tool handles mixed language inputs gracefully where possible.
+
+Examples:
+
+```javascript
+numbersToMarks("hai3ou1")
+// "hǎi'ōu"
+
+numbersToMarks("Na4wei4 xian1sheng1 jiao4 Max, ta1 lai2zi4 De1guo2.")
+// "Nàwèi xiānshēng jiào Max, tā láizì Dēguó."
+
+marksToNumbers("The northeastern region of China has three provinces—Jílín, Hēilóngjiāng, and Liáoníng.")
+// "The northeastern region of China has three provinces—Ji2lin2, Hei1long2jiang1, and Liao2ning2." 
+```
 
 ## API Reference
 
@@ -145,24 +149,35 @@ Converts Zhuyin to Pinyin.
 ### Basic Conversions
 
 ```javascript
-const { p2z, z2p } = require('pinyin-to-zhuyin');
+import { p2z, z2p } from 'pinyin-to-zhuyin';
 
 // Pinyin to Zhuyin
-p2z('ni3hao3')           // ㄋㄧˇㄏㄠˇ
+p2z('ni3hao3')           // ㄋㄧˇ ㄏㄠˇ
 p2z('zhong1guo2')        // ㄓㄨㄥ ㄍㄨㄛˊ
-p2z('lü4')               // ㄌㄩˋ
+p2z('Wo3 de ke4ben3')    // ㄨㄛˇ ˙ㄉㄜ ㄎㄜˋ ㄅㄣˇ
 p2z('hua1r')             // ㄏㄨㄚㄦ
 
 // Zhuyin to Pinyin
-z2p('ㄋㄧˇㄏㄠˇ')         // nǐhǎo
-z2p('ㄓㄨㄥ ㄍㄨㄛˊ')     // zhōng guó
-z2p('ㄌㄩˋ')             // lü4
-z2p('ㄏㄨㄚㄦ')           // huār
+z2p('ㄋㄧˇㄏㄠˇ')               // nǐhǎo
+z2p('ㄓㄨㄥ ㄍㄨㄛˊ')           // zhōng guó
+z2p('ㄨㄛˇ ˙ㄉㄜ ㄎㄜˋ ㄅㄣˇ')  // wo3 de ke4ben3
+z2p('ㄏㄨㄚㄦ')                 // huār
 ```
 
 ### Advanced Features
 
 ```javascript
+p2z('“tā shuō: ‘nǐhǎo’, rán hòu jiù zǒu lē.”', { convertPunctuation: true })
+// Output: 「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇ ㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ㄌㄜ。」
+
+// Long sentences with punctuation conversion
+z2p("「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ˙ㄌㄜ。」", { convertPunctuation: true })
+// Output: “tā shuō: ‘nǐhǎo’, rán hòu jiù zǒu lē.”
+
+// Chinese: 俗話說：「江太公釣魚，願者上鉤」
+z2p('ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」', { convertPunctuation: true })
+// Output: súhuà shuō: "jiāngtàigōng diàoyú, yuànzhě shànggǒu"
+
 // Erhua handling
 p2z('hua1r')             // ㄏㄨㄚㄦ
 z2p('ㄏㄨㄚㄦ', { erhuaTone: 'before-r' })  // hua1r
@@ -231,18 +246,20 @@ The test suite includes comprehensive coverage for:
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License
 
 ## Repository Structure
 
 ```text
 pinyin-to-zhuyin/
-├── pinyin-to-zhuyin.js    # Main library
-├── p2z.js                 # Command-line file converter
-├── p2z-stream.js          # Interactive command-line tool
-├── package.json           # Package configuration
+├── pinyin-to-zhuyin.js       # Main library
+├── tone-tool.js              # Tone utilities and helpers
+├── p2z.js                    # Command-line pinyin to zhuyin converter
+├── z2p.js                    # Command-line zhuyin to pinyin converter
+├── package.json              # Package configuration
 ├── test/
-│   ├── converter.spec.js  # Test suite
-│   └── fixtures/          # Test data files
-└── README.md              # This file
+│   ├── zhuyin-converter.spec.js  # Main test suite
+│   ├── tone-tool.spec.js         # Tone tool tests
+│   └── fixtures/                 # Test data files
+└── README.md                     # This file
 ```

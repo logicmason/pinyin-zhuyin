@@ -117,6 +117,20 @@ describe('Pinyin to Zhuyin Converter', () => {
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
   });
+  it('should convert punctuation correctly when set to convert', () => {
+    const testCases = [
+      { input: "Yǐhòu wǒ jīhū měi nián dōu dào Bōshìdùn qù.",
+        expected: "ㄧˇ ㄏㄡˋ ㄨㄛˇ ㄐㄧ ㄏㄨ ㄇㄟˇ ㄋㄧㄢˊ ㄉㄡ ㄉㄠˋ ㄅㄛ ㄕˋ ㄉㄨㄣˋ ㄑㄩˋ。" },
+      { input: '“tā shuō: ‘nǐhǎo’, rán hòu jiù zǒu lē.”',
+        expected: "「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇ ㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ㄌㄜ。」" },
+    ];
+
+    testCases.forEach(({ input, expected }) => {
+      const actual = p2z(input, { convertPunctuation: true });
+      expect(actual).to.equal(expected,
+        `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+  });
 
   it('should convert pinyin input file to expected zhuyin output', () => {
     const fixturesDir = path.join(__dirname, 'fixtures');
@@ -335,8 +349,8 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄧㄡˇ ㄖㄣˊ ㄗㄞˋ ㄇㄚ˙?", expected: "you3 ren2 zai4 ma5?" },
       { input: "ㄓㄜˋㄍㄜ˙ ㄉㄧˋㄈㄤ, ㄏㄠˇㄒㄧㄤˋ ㄨㄛˇ ㄌㄞˊ ㄍㄨㄛˋ ㄌㄜ˙!", expected: "zhe4ge5 di4fang1, hao3xiang4 wo3 lai2 guo4 le5!" },
       { input: "ㄋㄧˇㄏㄠˇ... ㄨㄛˇ ㄕˋ ㄒㄧㄠˇㄓㄤ", expected: "ni3hao3... wo3 shi4 xiao3zhang1" },
-      { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄙㄨㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
-        expected: "su2hua4 shuo1：「su1jiang1tai4gong1 diao4yu2, yuan4zhe3 shang4gou3」" }
+      { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
+        expected: "su2hua4 shuo1：「jiang1tai4gong1 diao4yu2, yuan4zhe3 shang4gou3」" }
     ];
 
     testCases.forEach(({ input, expected }) => {
@@ -360,8 +374,8 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄓㄜˋㄍㄜ˙ ㄉㄧˋㄈㄤ, ㄏㄠˇㄒㄧㄤˋ ㄨㄛˇ ㄌㄞˊ ㄍㄨㄛˋ ㄌㄜ˙!",
         expected: "zhège dìfāng, hǎoxiàng wǒ lái guò le!" },
       { input: "ㄋㄧˇㄏㄠˇ... ㄨㄛˇ ㄕˋ ㄒㄧㄠˇㄓㄤ", expected: "nǐhǎo... wǒ shì xiǎozhāng" },
-      { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄙㄨㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
-        expected: "súhuà shuō: “sūjiāngtàigōng diàoyú, yuànzhě shànggǒu”" },
+      { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
+        expected: "súhuà shuō: “jiāngtàigōng diàoyú, yuànzhě shànggǒu”" },
       { input: "ㄌㄠˇ ㄕ ㄕㄨㄛ: “ㄋㄧˇ ˙ㄇㄣ ㄧㄠˋ ㄐㄧˋ ㄓㄨˋ ㄍㄨㄛˊ ㄈㄨˋ ㄕㄨㄛ ˙ㄉㄜ ‘ㄑㄧㄥ ㄋㄧㄢˊ ㄧㄠˋ ㄌㄧˋ ㄓˋ ㄗㄨㄛˋ ㄉㄚˋ ㄕˋ, ㄅㄨˋ ㄧㄠˋ ㄗㄨㄛˋ ㄉㄚˋ ㄍㄨㄢ’ ㄓㄜˋ ㄐㄩˋ ㄏㄨㄚˋ.”",
         expected: "lǎo shī shuō: “nǐ mēn yào jì zhù guó fù shuō dē ‘qīng nián yào lì zhì zuò dà shì, bù yào zuò dà guān’ zhè jù huà.”" },
     ];

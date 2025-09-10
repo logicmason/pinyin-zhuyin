@@ -23,6 +23,8 @@ const ChineseToEnglishPunctuation = {
   "「": "“", "」": "”", "『": "‘", "』": "’" 
 };
 
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // create a regex that greedily matches the longest possible final
 const finalMatcher = `(?:${bpmfFinals.join("|")})`;
 // prefer (initial? + final) over syllabic-only in the alternation
@@ -202,6 +204,29 @@ function numbersToMarks(s) {
   return out;
 }
 
+function toChinesePunctuation(text) {
+  let out = text;
+  for (const [zh, en] of Object.entries(ChineseToEnglishPunctuation)) {
+    out = out.replace(new RegExp(escapeRegExp(en), "g"), zh);
+  }
+  // strip spaces after Chinese punctuation
+  return out.replace(/([，。？！；：])\s+(?=\S)/g, "$1");
+}
+
+function toEnglishPunctuation(text) {
+  let out = text;
+  // add space after ，。？！；： when not followed by end of string or closing quotes
+  // but only if there isn't already a space
+  out = out.replace(/([，。？！；：])(?!$|」|』|》|\s)/g, "$1 ");
+  // add space after ellipsis when not followed by end of string or closing quotes
+  out = out.replace(/(\.\.\.)(?!$|」|』|》|\s)/g, "$1 ");
+  // convert Chinese punctuation to English punctuation
+  for (const [zh, en] of Object.entries(ChineseToEnglishPunctuation)) {
+    out = out.replace(new RegExp(escapeRegExp(zh), "g"), en);
+  }
+  return out;
+}
+
 // Zhuyin syllable segmenter (regex + MoE-style erhua):
 // - Merge ONLY a bare "ㄦ" (no tone) to the previous syllable.
 // - If ㄦ has a tone, leave it as its own syllable.
@@ -215,7 +240,22 @@ function segmentBpmf(str) {
   }
   if (i < str.length) { out.push(str.slice(i)); }
 
-  return applyErhua(out);
+  // Merge leading neutral tone mark (˙) with the following zhuyin syllable
+  const norm = [];
+  for (let j = 0; j < out.length; j++) {
+    const t = out[j];
+    if (t === "˙" && j + 1 < out.length) {
+      const next = out[j + 1];
+      if (next && /[ㄅ-ㄩ]/.test(next[0])) {
+        norm.push(t + next);
+        j++;
+        continue;
+      }
+    }
+    norm.push(t);
+  }
+
+  return applyErhua(norm);
 }
 
 const applyErhua = (tokens) => {
@@ -298,16 +338,13 @@ const z2p = function (zhuyin, options = {}) {
     umlautMode = "collapse-nl-uan",
   } = options;
 
-  // normalize ・ → space
+  const addApos = apostrophes === true || (apostrophes === "auto" && tonemarks === true);
   const normalized = zhuyin.replace(/・/g, " ");
 
-  // build with **numbers** (or hidden 5), then optional apostrophes
   const tokens = segmentBpmf(normalized);
+
   const pieces = [];
   let prevWasSyllable = false;
-
-  // decide apostrophe behavior
-  const addApos = apostrophes === true || (apostrophes === "auto" && tonemarks === true);
 
   for (const token of tokens) {
     if (/[ㄅ-ㄩ˙ˊˇˋ]/.test(token)) {
@@ -324,12 +361,7 @@ const z2p = function (zhuyin, options = {}) {
 
   let output = pieces.join("");
 
-  if (convertPunctuation) {
-    Object.keys(ChineseToEnglishPunctuation).forEach((key) => {
-      const rexp = new RegExp(key, "g");
-      output = output.replace(rexp, ChineseToEnglishPunctuation[key]);
-    });
-  }
+  if (convertPunctuation) { output = toEnglishPunctuation(output); }
 
   // Single switch to marks (auto-detects erhua style)
   return tonemarks ? numbersToMarks(output) : output;
@@ -394,12 +426,7 @@ const p2z = function (pinyin = "", options = {}) {
     });
   }
 
-  if (convertPunctuation) {
-    Object.keys(ChineseToEnglishPunctuation).forEach((key) => {
-      const rexp = new RegExp(key, "g");
-      output = output.replace(rexp, ChineseToEnglishPunctuation[key]);
-    });
-  }
+  if (convertPunctuation) { output = toChinesePunctuation(output); }
 
   return output;
 }

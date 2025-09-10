@@ -253,6 +253,9 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄏㄠˇ ㄇㄚ˙", expected: "hao3 ma5" },
       { input: "ㄞ˙", expected: "ai5" },
       { input: "ㄧㄛ˙", expected: "yo5" },
+      { input: "ㄖㄣˋㄕ˙ ㄇㄚ˙", expected: "ren4shi5 ma5" },
+      // very unreasonable but try to support
+      { input: "ㄖㄣˋ˙ㄕㄇㄚ˙", expected: "ren4shi5ma5" },
       { input: "ㄖㄣˋㄕ˙ㄇㄚ˙", expected: "ren4shi5ma5" },
     ];
 
@@ -339,8 +342,18 @@ describe('Zhuyin to Pinyin Converter', () => {
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
+  });
 
-    const moreTestCases = [
+  it('should convert punctuation correctly when set to convert', () => {
+    const testCases = [
+      { input: "ㄋㄧˇㄏㄠˇ，ㄕˋㄐㄧㄝˋ。", expected: "nǐhǎo, shìjiè." },
+      { input: "ㄋㄧˇㄏㄠˇ！ㄗㄞˋㄐㄧㄢˋ。", expected: "nǐhǎo! zàijiàn." },
+      { input: "ㄨㄤˊㄇㄟˇ：「ㄏㄞ！」", expected: "wángměi: “hāi!”" },
+      { input: "「ㄋㄧˇㄏㄠˇ。」", expected: "“nǐhǎo.”" },
+      { input: "「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ˙ㄌㄜ。」",
+        expected: "“tā shuō: ‘nǐhǎo’, rán hòu jiù zǒu lē.”" },
+      { input: "ㄋㄧˇㄏㄠˇ， ㄕˋ", expected: "nǐhǎo, shì" },
+      { input: "ㄋㄧˇㄏㄠˇ...ㄗㄞˋㄐㄧㄢˋ", expected: "nǐhǎo... zàijiàn" },
       { input: "ㄧㄡˇ ㄖㄣˊ ㄗㄞˋ ㄇㄚ˙?", expected: "yǒu rén zài ma?" },
       { input: "ㄓㄜˋㄍㄜ˙ ㄉㄧˋㄈㄤ, ㄏㄠˇㄒㄧㄤˋ ㄨㄛˇ ㄌㄞˊ ㄍㄨㄛˋ ㄌㄜ˙!",
         expected: "zhège dìfāng, hǎoxiàng wǒ lái guò le!" },
@@ -348,10 +361,10 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄙㄨㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」",
         expected: "súhuà shuō: “sūjiāngtàigōng diàoyú, yuànzhě shànggǒu”" },
       { input: "ㄌㄠˇ ㄕ ㄕㄨㄛ: “ㄋㄧˇ ˙ㄇㄣ ㄧㄠˋ ㄐㄧˋ ㄓㄨˋ ㄍㄨㄛˊ ㄈㄨˋ ㄕㄨㄛ ˙ㄉㄜ ‘ㄑㄧㄥ ㄋㄧㄢˊ ㄧㄠˋ ㄌㄧˋ ㄓˋ ㄗㄨㄛˋ ㄉㄚˋ ㄕˋ, ㄅㄨˋ ㄧㄠˋ ㄗㄨㄛˋ ㄉㄚˋ ㄍㄨㄢ’ ㄓㄜˋ ㄐㄩˋ ㄏㄨㄚˋ.”",
-        expected: "Lǎoshī shuō:`Nǐmen yào jì zhù guófù shuō de “qīngnián yào lìzhì zuò dàshì, bùyào zuò dà guān” zhè jù huà.'" }
+        expected: "lǎo shī shuō: “nǐ mēn yào jì zhù guó fù shuō dē ‘qīng nián yào lì zhì zuò dà shì, bù yào zuò dà guān’ zhè jù huà.”" },
     ];
 
-    moreTestCases.forEach(({ input, expected }) => {
+    testCases.forEach(({ input, expected }) => {
       const actual = z2p(input, { tonemarks: true, convertPunctuation: true });
       expect(actual).to.equal(expected,
         `"${input}" should convert to "${expected}" but got "${actual}"`);

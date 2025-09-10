@@ -1,0 +1,34 @@
+{
+  "name": "pinyin-to-zhuyin",
+  "version": "0.0.0",
+  "description": "Takes zhuyin (AKA \"bo po mo fo\") and converts it into pinyin.",
+  "main": "pinyin-to-zhuyin.js",
+  "scripts": {
+    "test": "nyc mocha --reporter spec"
+  },
+  "bin": {
+    "p2z": "./p2z.js",
+    "p2z-stream": "./p2z-stream.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/logicmason/pinyin-to-zhuyin.git"
+  },
+  "keywords": [
+    "zhuyin",
+    "pinyin",
+    "converter"
+  ],
+  "author": "Mark Wilbur",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/logicmason/pinyin-to-zhuyin/issues"
+  },
+  "homepage": "https://github.com/mlogicmason/pinyin-to-zhuyin",
+  "devDependencies": {
+    "chai": "^4.4.1",
+    "lodash": "^4.17.21",
+    "mocha": "^10.5.2",
+    "nyc": "^17.1.0"
+  }
+}

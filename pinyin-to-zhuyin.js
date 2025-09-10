@@ -5,7 +5,7 @@
 // 
 // Copyright Mark Wilbur, MIT License
 
-const { toneMarkTable, letters, vowels, consonants, toToneNumbers } = require('./tone-tool');
+import { toneMarkTable, vowels, consonants, toToneNumbers } from './tone-tool.js';
 
 const bpmfFinals = [
   "ㄧㄞ", "ㄧㄠ", "ㄧㄡ", "ㄧㄚ", "ㄧㄛ", "ㄧㄝ", "ㄧㄢ", "ㄧㄣ", "ㄧㄤ", "ㄧㄥ",
@@ -431,7 +431,4 @@ const p2z = function (pinyin = "", options = {}) {
   return output;
 }
 
-module.exports.bpmfTransforms = bpmfTransforms;
-module.exports.pinyinTransforms = pinyinTransforms;
-module.exports.p2z = p2z;
-module.exports.z2p = z2p;
+export { bpmfTransforms, pinyinTransforms, p2z, z2p };

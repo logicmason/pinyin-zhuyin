@@ -1,8 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { expect } = require('chai');
-const { p2z } = require('../pinyin-to-zhuyin.js');
-const { z2p } = require('../pinyin-to-zhuyin.js');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { expect } from 'chai';
+import { p2z, z2p } from '../pinyin-to-zhuyin.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Import the converter
 describe('Pinyin to Zhuyin Converter', () => {
   let opts = { tonemarks: true, inputHasToneMarks: true }

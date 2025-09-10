@@ -312,17 +312,14 @@ function toToneNumbers(text, options = {}) {
   }).join('');
 }
 
-module.exports = {
+export {
   toToneMarks,
   toToneNumbers,
   isNonPinyinWord,
   toneMarkTable,
   vowelSet,
-  // Regex class helpers
-  // consonants range chosen to match pinyin syllable segmentation assumptions
-  consonants: "b-df-hj-np-tv-z",
-  vowels: "aeiouü",
-  // Debug functions
   stripTonesAndLowercase,
   findSyllableBoundaries,
+  consonants,
+  vowels,
 };

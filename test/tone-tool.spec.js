@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const { expect } = require('chai');
-const { toToneMarks, toToneNumbers } = require('../tone-tool.js');
+import fs from 'fs';
+import path from 'path';
+import { expect } from 'chai';
+import { toToneMarks, toToneNumbers } from '../tone-tool.js';
 
 describe('Pinyin Tone Tool', () => {
   it('should handle an empty string', () => {

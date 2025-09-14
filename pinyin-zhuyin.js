@@ -313,8 +313,8 @@ function bpmfSyllableToPinyin(zh, opts) {
     py = applyRules(py, finalRules);
   }
 
-  // default, but optional post-transforms (umlaut handling)
-  if (opts.umlautMode === "collapse-nl-uan") {
+  // optional post-transforms (umlaut handling)
+  if (opts.nlUmlautU === "stripUmlaut") {
     py = applyRules(py, pinyinPostTransformsCollapse);
   }
 
@@ -335,7 +335,7 @@ const z2p = function (zhuyin, options = {}) {
     convertPunctuation = false,   // does not convert ,.?!;: to ，,。？！；： 
     markNeutralTone = !tonemarks, // treats zhe4ge in pinyin as zhe4ge5
     apostrophes = "auto", // true to add, false to skip, auto to add only with tone marks
-    umlautMode = "collapse-nl-uan",
+    nlUmlautU = "preserveUmlaut", // "stripUmlaut" to collapse n/l + üan → uan
   } = options;
 
   const addApos = apostrophes === true || (apostrophes === "auto" && tonemarks === true);
@@ -348,7 +348,7 @@ const z2p = function (zhuyin, options = {}) {
 
   for (const token of tokens) {
     if (/[ㄅ-ㄩ˙ˊˇˋ]/.test(token)) {
-      const pyNum = bpmfSyllableToPinyin(token, { markNeutralTone, erhuaTone, umlautMode }); // numbers only
+      const pyNum = bpmfSyllableToPinyin(token, { markNeutralTone, erhuaTone, nlUmlautU }); // numbers only
       if (addApos && prevWasSyllable && /^[aoe]/i.test(pyNum)) pieces.push("'");
       pieces.push(pyNum);
       prevWasSyllable = true;

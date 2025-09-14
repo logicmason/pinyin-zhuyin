@@ -290,7 +290,6 @@ describe('Zhuyin to Pinyin Converter', () => {
       { input: "ㄑㄩˇ", expected: "qu3" },
       { input: "ㄒㄩ", expected: "xu1" },
       { input: "ㄌㄩㄝˋ", expected: "lüe4" },
-      { input: "ㄌㄩㄢˋ", expected: "luan4" },
       { input: "ㄋㄩㄝˇ", expected: "nüe3" },
       { input: "ㄐㄩㄝ", expected: "jue1" },
       { input: "ㄑㄩㄝˇ", expected: "que3" },
@@ -303,6 +302,31 @@ describe('Zhuyin to Pinyin Converter', () => {
         `"${input}" should convert to "${expected}" but got "${actual}"`);
     });
   });
+
+  it('should optionally strip umlaut from n/l + üan for rare syllables like 攣', () => {
+    const stripUmlautCases = [
+      { input: "ㄌㄩㄢˊ", expected: "luan2" },
+      { input: "ㄌㄩㄢˇ", expected: "luan3" },
+    ];
+
+    stripUmlautCases.forEach(({ input, expected }) => {
+      const actual = z2p(input, { nlUmlautU: "stripUmlaut", tonemarks: false });
+      expect(actual).to.equal(expected,
+        `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+
+    const preserveUmlautCases = [
+      { input: "ㄌㄩㄢˊ", expected: "lüan2" },
+      { input: "ㄌㄩㄢˇ", expected: "lüan3" },
+    ];
+
+    preserveUmlautCases.forEach(({ input, expected }) => {
+      const actual = z2p(input, { nlUmlautU: "preserveUmlaut", tonemarks: false });
+      expect(actual).to.equal(expected,
+        `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+  });
+
 
   it('should handle erhua (儿化) correctly', () => {
     opts.erhuaTone = "before-r";

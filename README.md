@@ -5,13 +5,14 @@ A comprehensive Node.js library and command-line tool for converting between Pin
 ## Features
 
 - **Bidirectional Conversion**: Convert from Pinyin to Zhuyin (`p2z`) and Zhuyin to Pinyin (`z2p`)
-- **Tone Support**: Handles all 5 tones including neutral tone (5th tone)
-- **Tone Mark Options**: Output with tone marks (ā, á, ǎ, à) or tone numbers (1, 2, 3, 4, 5)
-- **Erhua Support**: Handles northern dialect erhua (儿化) with flexible tone placement
-- **Umlaut Handling**: Supports both `ü` and `v` for the same sound
-- **Syllable Segmentation**: Intelligent syllable boundary detection
 - **Command Line Tools**: Basic CLI interface
 - **Comprehensive Test Suite**: Extensive test coverage for edge cases
+- **Erhua Support**: Handles northern dialect erhua (儿化) with flexible tone placement
+- **Tone Support**: Handles all 5 tones including neutral tone (5th tone)
+- **Tone Mark Options**: Output with tone marks (ā, á, ǎ, à) or tone numbers (1, 2, 3, 4, 5)
+- **Handles rare syllables**: Optionally collapse n/l + üan → uan (see: https://www.moedict.tw/攣)
+- **Syllable Segmentation**: Intelligent syllable boundary detection
+- **Umlaut Handling**: Supports both `ü` and `v` for the same sound
 
 ## Installation
 
@@ -43,7 +44,7 @@ Convert pinyin text to zhuyin:
 p2z input.txt
 
 # Convert from stdin
-echo "ni3hao3" | p2z
+echo 'ni3hao3' | p2z
 
 # Show help
 p2z --help
@@ -65,7 +66,7 @@ Convert zhuyin text to pinyin:
 z2p input.txt
 
 # Convert from stdin
-echo "ㄋㄧˇㄏㄠˇ" | z2p
+echo 'ㄋㄧˇㄏㄠˇ' | z2p
 
 # Show help
 z2p --help
@@ -108,8 +109,8 @@ console.log(z2p('ㄋㄧˇㄏㄠˇ')); // nǐhǎo
 
 // With options
 const options = {
-  erhuaTone: 'after-r',          // Place pinyin tone after 'r' in erhua
-  umlautMode: 'collapse-nl-uan', // Handle n/l + üan → uan (see: https://www.moedict.tw/%E6%94%A3)
+  erhuaTone: "after-r",          // Place pinyin tone after 'r' in erhua
+  nlUmlautU: "preserveUmlaut",   // Optionally preserve or collapse n/l + üan → uan, see: https://www.moedict.tw/攣
   tonemarks: true,               // Use tone marks (instead of numbers)
   markNeutralTone: false,        // Hide neutral tone numbers
   apostrophes: 'auto'            // Add apostrophes where required at syllable boundaries
@@ -131,14 +132,14 @@ This tool handles mixed language inputs gracefully where possible.
 Examples:
 
 ```javascript
-numbersToMarks("hai3ou1")
-// "hǎi'ōu"
+numbersToMarks('hai3ou1')
+// hǎi'ōu
 
-numbersToMarks("Na4wei4 xian1sheng1 jiao4 Max, ta1 lai2zi4 De1guo2.")
-// "Nàwèi xiānshēng jiào Max, tā láizì Dēguó."
+numbersToMarks('Na4wei4 xian1sheng1 jiao4 Max, ta1 lai2zi4 De1guo2.')
+// Nàwèi xiānshēng jiào Max, tā láizì Dēguó.
 
-marksToNumbers("The northeastern region of China has three provinces—Jílín, Hēilóngjiāng, and Liáoníng.")
-// "The northeastern region of China has three provinces—Ji2lin2, Hei1long2jiang1, and Liao2ning2." 
+marksToNumbers('The northeastern region of China has three provinces—Jílín, Hēilóngjiāng, and Liáoníng.')
+// The northeastern region of China has three provinces—Ji2lin2, Hei1long2jiang1, and Liao2ning2. 
 ```
 
 ## API Reference
@@ -165,7 +166,7 @@ Converts Zhuyin to Pinyin.
 - `zhuyin` (string): Input zhuyin text
 - `options` (object, optional):
   - `erhuaTone` (string, default: 'after-r'): Tone placement for erhua ('before-r' or 'after-r')
-  - `umlautMode` (string, default: 'collapse-nl-uan'): Handle n/l + üan → uan
+  - `nlUmlautU` (string, default: 'collapse-nl-uan'): Handle n/l + üan → uan
   - `tonemarks` (boolean, default: true): Use tone marks instead of numbers
   - `markNeutralTone` (boolean, default: false): Show neutral tone as number 5
   - `apostrophes` (string, default: 'auto'): Apostrophe behavior ('auto', true, false)
@@ -199,12 +200,12 @@ p2z('“tā shuō: ‘nǐhǎo’, rán hòu jiù zǒu lē.”', { convertPunctua
 // Output: 「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇ ㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ㄌㄜ。」
 
 // Long sentences with punctuation conversion
-z2p("「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ˙ㄌㄜ。」", { convertPunctuation: true })
+z2p('「ㄊㄚ ㄕㄨㄛ：『ㄋㄧˇㄏㄠˇ』，ㄖㄢˊ ㄏㄡˋ ㄐㄧㄡˋ ㄗㄡˇ ˙ㄌㄜ。」', { convertPunctuation: true })
 // Output: “tā shuō: ‘nǐhǎo’, rán hòu jiù zǒu lē.”
 
 // Chinese: 俗話說：「江太公釣魚，願者上鉤」
 z2p('ㄙㄨˊㄏㄨㄚˋ ㄕㄨㄛ：「ㄐㄧㄤㄊㄞˋㄍㄨㄥ ㄉㄧㄠˋㄩˊ, ㄩㄢˋㄓㄜˇ ㄕㄤˋㄍㄡˇ」', { convertPunctuation: true })
-// Output: súhuà shuō: "jiāngtàigōng diàoyú, yuànzhě shànggǒu"
+// Output: súhuà shuō: jiāngtàigōng diàoyú, yuànzhě shànggǒu
 
 // Erhua handling
 p2z('hua1r')             // ㄏㄨㄚㄦ

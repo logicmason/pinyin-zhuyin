@@ -56,11 +56,11 @@ const wordPattern = new RegExp(`^[\\w${toneMarkedVowels}]+$`, 'i');
 function buildSyllablePattern() {
   return new RegExp(
     `(?:zh|ch|sh|[${consonants}])?` +  // optional initial (include r)
-    `(?:[iuvü${toneMarkedVowels}])?` +    // optional medial
+    `(?:[iuvü${toneMarkedVowels}])?` + // optional medial
     `(?:` +
       // Complex compound finals (longest first)
       `(?:[${vowels}](?:iang|iong|uang|ueng|ian|iao|ian|ing|ong|ang|eng|ai|ao|ei|ou|an|en|in|un|vn))|` +
-      `(?:[${vowels}](?:i|o|u|ng|n))|` +  // simpler compound finals (ng before n)
+      `(?:[${vowels}](?:i|o|u|ng|n))|` +    // simpler compound finals (ng before n)
       `(?:[${vowels}])` +                   // single vowels
     `)` +
     `(?:r(?![a-zü${toneMarkedVowels}]))?`,  // optional erhua (r not followed by vowel)

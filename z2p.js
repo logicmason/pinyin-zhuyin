@@ -4,8 +4,9 @@ import { readFileSync } from 'fs';
 import { z2p } from './pinyin-zhuyin.js';
 
 const args = process.argv.slice(2);
+const isInteractive = process.stdin.isTTY;
 
-if (args.length === 0) {
+if (args.length === 0 && isInteractive) {
   console.error('Usage: z2p [options] [inputfile]');
   console.error('');
   console.error('Options:');
@@ -43,7 +44,7 @@ if (args.length === 0) {
 // Parse options
 const options = {
   tonemarks: args.includes('--tonemarks'),
-  convertPunctuation: args.includes('--convert-punctuationuation')
+  convertPunctuation: args.includes('--convert-punctuation')
 };
 
 // Get input file (last argument that's not an option)
@@ -61,6 +62,20 @@ if (inputFile) {
   }
 } else if (args.some(arg => arg.startsWith('--'))) {
   // Options provided but no file - read from stdin
+  const chunks = [];
+  process.stdin.on('data', chunk => chunks.push(chunk));
+  process.stdin.on('end', () => {
+    try {
+      const text = chunks.join('');
+      const result = z2p(text, options);
+      console.log(result);
+    } catch (err) {
+      console.error('Error processing stdin:', err.message);
+      process.exit(1);
+    }
+  });
+} else if (!isInteractive) {
+  // No args, but input is being piped - read from stdin
   const chunks = [];
   process.stdin.on('data', chunk => chunks.push(chunk));
   process.stdin.on('end', () => {

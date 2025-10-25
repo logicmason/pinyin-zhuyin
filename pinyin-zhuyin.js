@@ -5,7 +5,7 @@
 // 
 // Copyright Mark Wilbur, MIT License
 
-import { toneMarkTable, vowels, consonants, toToneNumbers } from './tone-tool.js';
+import { toneMarkTable, vowels, consonants, toToneNumbers } from 'pinyin-tone-tool';
 
 const bpmfFinals = [
   "ㄧㄞ", "ㄧㄠ", "ㄧㄡ", "ㄧㄚ", "ㄧㄛ", "ㄧㄝ", "ㄧㄢ", "ㄧㄣ", "ㄧㄤ", "ㄧㄥ",

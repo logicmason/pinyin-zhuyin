@@ -124,10 +124,10 @@ console.log(z2p('ㄏㄨㄚㄦ', options)); // huār
 - `toToneMarks(input: string)` – Convert Pinyin with tone numbers to tone marks.
 - `toToneNumbers(input: string)` – Convert Pinyin with tone marks to tone numbers.
 - Tone data/helpers live in `tone-tool.js` and are reused by the converters:
-  - `toneMarkTable` – tone placement mapping.
-  - `vowels`, `consonants` – character-class fragments used to build tokenizer regexes in `p2z`.
+- `toneMarkTable` – tone placement mapping.
+- `vowels`, `consonants` – character-class fragments used to build tokenizer regexes in `p2z`.
 
-This tool handles mixed language inputs gracefully where possible.
+This tool handles mixed language inputs gracefully where possible. Dedicated repo [here](https://github.com/logicmason/pinyin-tone-tool).
 
 Examples:
 
@@ -282,13 +282,11 @@ MIT License
 ```text
 pinyin-to-zhuyin/
 ├── pinyin-zhuyin.js          # Main library
-├── tone-tool.js              # Tone utilities and helpers
 ├── p2z.js                    # Command-line pinyin to zhuyin converter
 ├── z2p.js                    # Command-line zhuyin to pinyin converter
 ├── package.json              # Package configuration
 ├── test/
 │   ├── zhuyin-converter.spec.js  # Main test suite
-│   ├── tone-tool.spec.js         # Tone tool tests
 │   └── fixtures/                 # Test data files
 └── README.md                     # This file
 ```

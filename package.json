@@ -1,8 +1,8 @@
 {
   "name": "pinyin-to-zhuyin",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Takes zhuyin (AKA \"bo po mo fo\") and converts it into pinyin.",
+  "description": "Bidirectional converter between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) phonetic systems with tone handling and erhua support.",
   "main": "pinyin-zhuyin.js",
   "scripts": {
     "test": "nyc mocha --reporter spec"
@@ -13,19 +13,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/logicmason/pinyin-to-zhuyin.git"
+    "url": "git+https://github.com/logicmason/pinyin-zhuyin.git"
   },
   "keywords": [
     "zhuyin",
+    "bopomofo",
     "pinyin",
-    "converter"
+    "converter",
+    "Mandarin",
+    "Chinese",
+    "phonetic"
   ],
-  "author": "Mark Wilbur",
+  "author": "Mark Wilbur <wei.xiaoma@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/logicmason/pinyin-to-zhuyin/issues"
+    "url": "https://github.com/logicmason/pinyin-zhuyin/issues"
   },
-  "homepage": "https://github.com/mlogicmason/pinyin-to-zhuyin",
+  "homepage": "https://github.com/logicmason/pinyin-zhuyin#readme",
   "devDependencies": {
     "chai": "^4.4.1",
     "lodash": "^4.17.21",

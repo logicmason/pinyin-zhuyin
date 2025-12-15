@@ -8,8 +8,8 @@
     "test": "nyc mocha --reporter spec"
   },
   "bin": {
-    "p2z": "./p2z.js",
-    "z2p": "./z2p.js"
+    "p2z": "p2z.js",
+    "z2p": "z2p.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,6 @@
     "lodash": "^4.17.21",
     "mocha": "^10.5.2",
     "nyc": "^17.1.0",
-    "pinyin-tone-tool": "^1.0.1"
+    "pinyin-tone-tool": "^1.0.2"
   }
 }

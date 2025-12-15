@@ -198,6 +198,21 @@ describe('Pinyin to Zhuyin Converter', () => {
     });
   });
 
+  it('should segment syllables where a valid final consonnant follows a syllable ending', () => {
+    const normalize = s => s.replace(/[˙ˊˇˋ1-5]/g, '');
+    const cases = [
+      { input: "qie4nuo4", expected: "ㄑㄧㄝˋ ㄋㄨㄛˋ" },          // no apostrophe → one syllable cluster
+      { input: "qiènuò", expected: "ㄑㄧㄝˋ ㄋㄨㄛˋ" },        // apostrophe forces split
+      { input: "An1guo2", expected: "ㄢ ㄍㄨㄛˊ" },
+      { input: "Ānguó", expected: "ㄢ ㄍㄨㄛˊ" },
+    ];
+    cases.forEach(({ input, expected }) => {
+      const actual = p2z(input, { tonemarks: true });
+      expect(normalize(actual)).to.equal(normalize(expected),
+        `"${input}" should segment to "${expected}" but got "${actual}"`);
+    });
+  });
+
   it('should keep j/q/x + ü clusters intact (ignore tones)', () => {
     const normalize = s => s.replace(/[˙ˊˇˋ1-5]/g, '');
     const cases = [

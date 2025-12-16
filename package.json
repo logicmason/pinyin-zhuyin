@@ -35,6 +35,6 @@
     "lodash": "^4.17.21",
     "mocha": "^10.5.2",
     "nyc": "^17.1.0",
-    "pinyin-tone-tool": "^1.0.2"
+    "pinyin-tone-tool": "^1.0.3"
   }
 }

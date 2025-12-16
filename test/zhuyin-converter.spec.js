@@ -205,6 +205,8 @@ describe('Pinyin to Zhuyin Converter', () => {
       { input: "qiènuò", expected: "ㄑㄧㄝˋ ㄋㄨㄛˋ" },        // apostrophe forces split
       { input: "An1guo2", expected: "ㄢ ㄍㄨㄛˊ" },
       { input: "Ānguó", expected: "ㄢ ㄍㄨㄛˊ" },
+      { input: "qiērù", expected: "ㄑㄧㄝ ㄖㄨˋ" },
+      { input: "qie1ru4", expected: "ㄑㄧㄝ ㄖㄨˋ" },
     ];
     cases.forEach(({ input, expected }) => {
       const actual = p2z(input, { tonemarks: true });

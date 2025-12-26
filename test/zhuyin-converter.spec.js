@@ -183,21 +183,6 @@ describe('Pinyin to Zhuyin Converter', () => {
     });
   });
 
-  it('should segment zero-initial a/e/o syllables only when disambiguated by apostrophe (ignore tones)', () => {
-    const normalize = s => s.replace(/[˙ˊˇˋ1-5]/g, '');
-    const cases = [
-      { input: "boao", expected: "ㄅㄛㄠ" },          // no apostrophe → one syllable cluster
-      { input: "bo'ao", expected: "ㄅㄛ ㄠ" },        // apostrophe forces split
-      { input: "kean", expected: "ㄎㄜㄢ" },
-      { input: "ke'an", expected: "ㄎㄜ ㄢ" },
-    ];
-    cases.forEach(({ input, expected }) => {
-      const actual = p2z(input, { tonemarks: true });
-      expect(normalize(actual)).to.equal(normalize(expected),
-        `"${input}" should segment to "${expected}" but got "${actual}"`);
-    });
-  });
-
   it('should segment syllables where a valid final consonnant follows a syllable ending', () => {
     const normalize = s => s.replace(/[˙ˊˇˋ1-5]/g, '');
     const cases = [

@@ -46,7 +46,7 @@ const bpmfTransforms = [
   {
     "yao": "ㄧㄠ", "you": "ㄧㄡ", "yue": "ㄩㄝ", "yong": "ㄩㄥ",
     "yuan": "ㄩㄢ", "ying": "ㄧㄥ", "yun": "ㄩㄣ",
-    "yang": "ㄧㄤ", "yan": "ㄧㄢ", "yin": "ㄧㄣ",
+    "yang": "ㄧㄤ", "yan": "ㄧㄢ", "yin": "ㄧㄣ", "yai": "ㄧㄞ",
     "wei": "ㄨㄟ", "wang": "ㄨㄤ", "wan": "ㄨㄢ", "weng": "ㄨㄥ", "wen": "ㄨㄣ", "wai": "ㄨㄞ"
   },
   { "iang": "ㄧㄤ", "ing": "ㄧㄥ" },

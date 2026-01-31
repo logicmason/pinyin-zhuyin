@@ -1,6 +1,6 @@
 {
   "name": "pinyin-to-zhuyin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "Bidirectional converter between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) phonetic systems with tone handling and erhua support.",
   "main": "pinyin-zhuyin.js",

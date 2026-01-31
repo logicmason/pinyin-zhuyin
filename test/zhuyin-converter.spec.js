@@ -9,6 +9,31 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 describe('Pinyin to Zhuyin Converter', () => {
   let opts = { tonemarks: true, inputHasToneMarks: true }
 
+  it('should convert basic zhuyin to lowercase pinyin', () => {
+    const testCases = [
+      { input: "ni3hao3", expected: "ㄋㄧˇ ㄏㄠˇ"},
+      { input: "bai1bai1", expected: "ㄅㄞ ㄅㄞ" },
+      { input: "ren2", expected: "ㄖㄣˊ" },
+      { input: "de5", expected: "˙ㄉㄜ" },
+      { input: "jue2ding4", expected: "ㄐㄩㄝˊ ㄉㄧㄥˋ" },
+      { input: "ce4lüe4", expected: "ㄘㄜˋ ㄌㄩㄝˋ" },
+      { input: "er2qie3", expected: "ㄦˊ ㄑㄧㄝˇ" },
+      { input: "yīngxióng", expected: "ㄧㄥ ㄒㄩㄥˊ" },
+      { input: "jiong3", expected: "ㄐㄩㄥˇ" },
+      { input: "ze2ren4", expected: "ㄗㄜˊ ㄖㄣˋ" },
+      { input: "ya4", expected: "ㄧㄚˋ" },
+      { input: "xia4", expected: "ㄒㄧㄚˋ" },
+      { input: "yo5", expected: "˙ㄧㄛ" },
+      { input: "yai2", expected: "ㄧㄞˊ" },
+    ];
+
+    testCases.forEach(({ input, expected }) => {
+      const actual = p2z(input, opts);
+      expect(actual).to.equal(expected,
+        `"${input}" should convert to "${expected}" but got "${actual}"`);
+    });
+  });
+
   it('should handle ü (yu) correctly', () => {
     const testCases = [
       { input: "lü4", expected: "ㄌㄩˋ" },
@@ -450,7 +475,7 @@ describe('Zhuyin to Pinyin Converter', () => {
       .trim()
       .split('\n')
       .map(line => {
-        const [zhuyin, pinyin] = line.split('\t');
+        const [zhuyin, pinyin] = line.split(/\s+/);
         return { input: zhuyin.trim(), expected: pinyin.trim() + '1' }; // Zhuyin without tone = 1st tone
       })
       .filter(testCase => testCase.input && testCase.expected); // Remove empty lines
@@ -473,7 +498,7 @@ describe('Zhuyin to Pinyin Converter', () => {
       .trim()
       .split('\n')
       .map(line => {
-        const [zhuyin, pinyin] = line.split('\t');
+        const [zhuyin, pinyin] = line.split(/\s+/);
         return { input: pinyin.trim(), expected: zhuyin.trim() + '5' }; // Pinyin without tone = 5th tone
       })
       .filter(testCase => testCase.input && testCase.expected); // Remove empty lines

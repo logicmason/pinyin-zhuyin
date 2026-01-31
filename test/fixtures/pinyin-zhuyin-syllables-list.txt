@@ -387,7 +387,9 @@
 ㄦ 	er
 ㄧ 	yi
 ㄧㄚ 	ya
+ㄧㄛ 	yo
 ㄧㄝ 	ye
+ㄧㄞ 	yai
 ㄧㄠ 	yao
 ㄧㄡ 	you
 ㄧㄢ 	yan

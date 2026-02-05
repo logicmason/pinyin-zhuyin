@@ -380,9 +380,15 @@ const p2z = function (pinyin = "", options = {}) {
 
   const tones = { "1": "", "2": "ˊ", "3": "ˇ", "4": "ˋ", "5": "˙" };
 
+  // Normalize erhua tones: move tone after 'r' onto the preceding syllable.
+  // Case 1: syllable+tone followed by 'r' and then another syllable start:
+  //   jinr1ge4 -> jin1r ge4  (so the existing erhua rules can treat 'r' as ㄦ)
+  output = output.replace(/([a-zü]+)r([1-5])([a-zü])/gi, (m, base, n, next) => {
+    return base.toLowerCase() === "e" ? m : `${base}${n}r ${next}`;
+  });
 
-  // Normalize erhua tones: move tone after 'r' onto the preceding syllable
-  // e.g., duor5 -> duo5r; but do NOT change true syllable "er3"
+  // Case 2: syllable+tone followed by 'r' at the end of a word/string or before
+  // non‑pinyin text (e.g., duor5 -> duo5r, hua1r -> hua1r).
   output = output.replace(/([a-zü]+)r([1-5])/gi, (m, base, n) => {
     return base.toLowerCase() === "e" ? m : `${base}${n}r`;
   });

@@ -40,7 +40,9 @@ describe('Pinyin to Zhuyin Converter', () => {
       { input: "nü3", expected: "ㄋㄩˇ" },
       { input: "ju1", expected: "ㄐㄩ" },
       { input: "qu3", expected: "ㄑㄩˇ" },
-      { input: "xu1", expected: "ㄒㄩ" }
+      { input: "xu1", expected: "ㄒㄩ" },
+      { input: "cèlüè", expected: "ㄘㄜˋ ㄌㄩㄝˋ" },
+      { input: "cèlvè", expected: "ㄘㄜˋ ㄌㄩㄝˋ" },
     ];
 
     testCases.forEach(({ input, expected }) => {
@@ -119,6 +121,8 @@ describe('Pinyin to Zhuyin Converter', () => {
       { input: "na4r", expected: "ㄋㄚˋㄦ" },
       { input: "yi1 ba5r", expected: "ㄧ ˙ㄅㄚㄦ" },
       { input: "yi1 bar5", expected: "ㄧ ˙ㄅㄚㄦ" },
+      { input: "jinr1ge4", expected: "ㄐㄧㄣㄦ ㄍㄜˋ" },
+      { input: "jīnrgè", expected: "ㄐㄧㄣㄦ ㄍㄜˋ" },
       { input: "ta1 dai4zhe gou3 liu4wanr1 qu4 le",
         expected: "ㄊㄚ ㄉㄞˋ ˙ㄓㄜ ㄍㄡˇ ㄌㄧㄡˋ ㄨㄢㄦ ㄑㄩˋ ˙ㄌㄜ" }
     ];

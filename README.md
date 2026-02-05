@@ -1,6 +1,6 @@
 # Pinyin <-> Zhuyin Converter
 
-A comprehensive Node.js library and command-line tool for converting between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) Mandarin phonetic systems. This converter supports bidirectional conversion with advanced features like tone handling, erhua (儿化), and various output formats.
+A comprehensive Node.js library and command-line tool for converting between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) Mandarin phonetic systems. This converter supports bidirectional conversion with advanced features like tone handling, erhua (儿化), and various output formats. See [online demo](https://imperialexam.com/zhuyin-tool).
 
 ## Features
 

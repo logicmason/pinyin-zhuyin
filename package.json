@@ -1,16 +1,31 @@
 {
   "name": "pinyin-to-zhuyin",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "type": "module",
   "description": "Bidirectional converter between Pinyin (Romanized Chinese) and Zhuyin (Bopomofo, ㄅㄆㄇㄈ) phonetic systems with tone handling and erhua support.",
   "main": "pinyin-zhuyin.js",
+  "exports": {
+    ".": {
+      "browser": "./dist/pinyin-to-zhuyin.esm.js",
+      "import": "./pinyin-zhuyin.js",
+      "default": "./pinyin-zhuyin.js"
+    }
+  },
+  "sideEffects": false,
   "scripts": {
+    "build": "rm -rf dist && rollup -c",
     "test": "nyc mocha --reporter spec"
   },
   "bin": {
     "p2z": "p2z.js",
     "z2p": "z2p.js"
   },
+  "files": [
+    "dist",
+    "pinyin-zhuyin.js",
+    "p2z.js",
+    "z2p.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/logicmason/pinyin-zhuyin.git"
@@ -30,11 +45,15 @@
     "url": "https://github.com/logicmason/pinyin-zhuyin/issues"
   },
   "homepage": "https://github.com/logicmason/pinyin-zhuyin#readme",
+  "dependencies": {
+    "pinyin-tone-tool": "^1.0.5"
+  },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "chai": "^4.4.1",
     "lodash": "^4.17.21",
     "mocha": "^10.5.2",
     "nyc": "^17.1.0",
-    "pinyin-tone-tool": "^1.0.5"
+    "rollup": "^4.34.9"
   }
 }
